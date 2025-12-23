@@ -96,8 +96,8 @@ Full documentation:
 🔗 LINKS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-PyPI:    https://pypi.org/project/sleuth/
-GitHub:  https://github.com/loganpowell/sleuth
-Issues:  https://github.com/loganpowell/sleuth/issues
+PyPI:    https://pypi.org/project/squirt/
+GitHub:  https://github.com/loganpowell/squirt
+Issues:  https://github.com/loganpowell/squirt/issues
 
 EOF

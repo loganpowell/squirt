@@ -226,9 +226,9 @@ if [ "$DRY_RUN" = false ]; then
         echo -e "${GREEN}🎉 Release $NEW_VERSION completed successfully!${NC}"
         echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
-        echo -e "${BLUE}📦 Install with: pip install sleuth==$NEW_VERSION${NC}"
-        echo -e "${BLUE}🔗 PyPI: https://pypi.org/project/sleuth/$NEW_VERSION/${NC}"
-        echo -e "${BLUE}🏷️  Tag: https://github.com/loganpowell/sleuth/releases/tag/v$NEW_VERSION${NC}"
+        echo -e "${BLUE}📦 Install with: pip install squirt==$NEW_VERSION${NC}"
+        echo -e "${BLUE}🔗 PyPI: https://pypi.org/project/squirt/$NEW_VERSION/${NC}"
+        echo -e "${BLUE}🏷️  Tag: https://github.com/loganpowell/squirt/releases/tag/v$NEW_VERSION${NC}"
         echo ""
     else
         warning "Skipping PyPI upload"

@@ -25,7 +25,7 @@ pip install sleuth
 uv pip install sleuth
 
 # From source
-pip install git+https://github.com/loganpowell/sleuth.git
+pip install git+https://github.com/loganpowell/squirt.git
 ```
 
 ### Basic Usage
@@ -326,8 +326,8 @@ Contributions welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for develop
 
 ```bash
 # Clone repository
-git clone https://github.com/loganpowell/sleuth.git
-cd sleuth
+git clone https://github.com/loganpowell/squirt.git
+cd squirt
 
 # Install in editable mode with dev dependencies
 pip install -e ".[dev]"
@@ -354,4 +354,4 @@ MIT
 
 ---
 
-_Sleuth - Because metrics should be invisible until they matter._
+_Squirt - Because metrics should be invisible until they matter._

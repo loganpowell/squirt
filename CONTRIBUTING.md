@@ -43,8 +43,8 @@ Quick release:
 
 ```bash
 # Clone the repository
-git clone https://github.com/loganpowell/sleuth.git
-cd sleuth
+git clone https://github.com/loganpowell/squirt.git
+cd squirt
 
 # Install in development mode with all dependencies
 pip install -e ".[dev,all]"
