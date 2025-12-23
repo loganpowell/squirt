@@ -1,6 +1,6 @@
 [project]
 name = "squirt"
-version = "0.1.2"
+version = "0.1.3"
 description = "Metrics collection and analysis library for component testing"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -23,7 +23,6 @@ classifiers = [
 ]
 
 dependencies = [
-    "networkx>=3.0,<4.0",
 ]
 
 [project.optional-dependencies]
@@ -42,18 +41,21 @@ llm = [
     "openai>=1.59.9,<2.0.0",
     "anthropic>=0.75.0",
 ]
+viz = [
+    "networkx>=3.0,<4.0",
+]
 all = [
-    "sleuth[azure,llm]",
+    "squirt[azure,llm,viz]",
 ]
 
 [project.scripts]
-sleuth = "squirt.cli:main"
+squirt = "squirt.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/loganpowell/sleuth"
-Documentation = "https://github.com/loganpowell/sleuth#readme"
-Repository = "https://github.com/loganpowell/sleuth"
-Issues = "https://github.com/loganpowell/sleuth/issues"
+Homepage = "https://github.com/loganpowell/squirt"
+Documentation = "https://github.com/loganpowell/squirt#readme"
+Repository = "https://github.com/loganpowell/squirt"
+Issues = "https://github.com/loganpowell/squirt/issues"
 
 [build-system]
 requires = ["hatchling"]
@@ -73,7 +75,7 @@ markers = [
 
 [tool.coverage.run]
 branch = true
-source = ["sleuth"]
+source = ["squirt"]
 omit = ["tests/*", "*/__pycache__/*"]
 
 [tool.ruff]
