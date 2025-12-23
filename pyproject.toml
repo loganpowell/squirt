@@ -1,0 +1,91 @@
+[project]
+name = "sleuth"
+version = "0.1.0"
+description = "Metrics collection and analysis library for component testing"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Logan Powell", email = "logan.powell@hey.com"}
+]
+keywords = ["metrics", "testing", "observability", "instrumentation", "ci-cd"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: System :: Monitoring",
+]
+
+dependencies = [
+    "networkx>=3.0,<4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0,<9.0.0",
+    "pytest-cov>=4.1.0,<6.0.0",
+    "mypy>=1.19.1",
+    "ruff>=0.1.0",
+]
+azure = [
+    "azure-ai-projects>=2.0.0b1",
+    "azure-identity>=1.25.1",
+    "azure-ai-evaluation>=1.13.7",
+]
+llm = [
+    "openai>=1.59.9,<2.0.0",
+    "anthropic>=0.75.0",
+]
+all = [
+    "sleuth[azure,llm]",
+]
+
+[project.scripts]
+sleuth = "sleuth.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/loganpowell/sleuth"
+Documentation = "https://github.com/loganpowell/sleuth#readme"
+Repository = "https://github.com/loganpowell/sleuth"
+Issues = "https://github.com/loganpowell/sleuth/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--strict-markers -q"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["sleuth"]
+omit = ["tests/*", "*/__pycache__/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]  # Line too long (handled by formatter)
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
