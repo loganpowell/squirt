@@ -1,5 +1,5 @@
 [project]
-name = "molerat"
+name = "squirt"
 version = "0.1.0"
 description = "Metrics collection and analysis library for component testing"
 readme = "README.md"
