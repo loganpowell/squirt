@@ -1,10 +1,10 @@
 """
-Vector/Embedding Metrics Plugin for Sleuth
+Vector/Embedding Metrics Plugin for Squirt
 
 Metrics for embeddings, vector search, and similarity operations.
 
 Usage:
-    from sleuth.contrib.vector import vector
+    from squirt.contrib.vector import vector
 
     @track(metrics=[
         vector.top_similarity.from_output("similarity"),

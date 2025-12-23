@@ -1,10 +1,10 @@
 """
-Sleuth Insights Engine
+Squirt Insights Engine
 
 Analyzes metrics to generate actionable insights.
 
 Usage:
-    from sleuth.reporting import InsightGenerator, generate_heartbeat
+    from squirt.reporting import InsightGenerator, generate_heartbeat
 
     heartbeat = generate_heartbeat(results)
     generator = InsightGenerator(heartbeat)

@@ -1,11 +1,11 @@
 """
-Sleuth Metrics Module
+Squirt Metrics Module
 
 Module-based metrics for robust IDE support. All metrics are defined as
 module-level constants with explicit type annotations.
 
 Usage:
-    from sleuth import metrics
+    from squirt import metrics
 
     @track(metrics=[
         metrics.runtime_ms.from_output("metadata.runtime_ms"),
@@ -21,7 +21,7 @@ Creating Custom Metrics:
 For project-specific metrics, create your own module:
 
     # my_project/metrics.py
-    from sleuth.metrics import MetricBuilder, AggregationType, SystemMetric
+    from squirt.metrics import MetricBuilder, AggregationType, SystemMetric
 
     # System metric (auto-derives aggregation)
     field_accuracy: MetricBuilder = MetricBuilder(
@@ -66,7 +66,7 @@ from .categories.system import SystemMetric
 # Core Types (re-exported for convenience)
 # =============================================================================
 
-# Re-export these so plugins can import from sleuth.metrics
+# Re-export these so plugins can import from squirt.metrics
 __all__ = [
     # Types for plugin authors
     "MetricBuilder",

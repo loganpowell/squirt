@@ -1,11 +1,11 @@
 """
-Data Structure Metrics for Sleuth
+Data Structure Metrics for Squirt
 
 Generic metrics for analyzing data structure characteristics - nesting depth,
 field counts, validation results, etc.
 
 Usage:
-    from sleuth.contrib.data import data
+    from squirt.contrib.data import data
 
     @track(metrics=[
         data.field_count.from_output("metadata.field_count"),
@@ -16,7 +16,7 @@ Usage:
         ...
 """
 
-from sleuth.plugins import MetricBuilder, AggregationType, SystemMetric
+from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
 
 
 class DataMetrics:

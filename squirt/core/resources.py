@@ -1,5 +1,5 @@
 """
-Sleuth Resource Tracking Utilities
+Squirt Resource Tracking Utilities
 
 Provides utilities for tracking runtime, memory, and CPU usage.
 These are used by the @track decorator to auto-inject metrics.

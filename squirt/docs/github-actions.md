@@ -1,6 +1,6 @@
 # GitHub Actions Integration
 
-Sleuth is designed for seamless CI/CD integration with GitHub Actions.
+Squirt is designed for seamless CI/CD integration with GitHub Actions.
 
 ## Quick Start
 
@@ -131,7 +131,7 @@ jobs:
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Sleuth not found. Skipping metrics." >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ Squirt not found. Skipping metrics." >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Set up Python
@@ -241,7 +241,7 @@ Ensure your project has this structure:
 
 ```
 backend/
-├── sleuth/              # Sleuth library
+├── sleuth/              # Squirt library
 ├── tests/
 │   ├── integration/     # Integration tests (run by CI)
 │   ├── results/         # Test results (generated)
@@ -256,7 +256,7 @@ backend/
 
 ## Environment Variables
 
-Sleuth respects these environment variables:
+Squirt respects these environment variables:
 
 | Variable              | Description             | Default           |
 | --------------------- | ----------------------- | ----------------- |

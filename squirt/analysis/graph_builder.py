@@ -1,5 +1,5 @@
 """
-Sleuth Dependency Graph Builder
+Squirt Dependency Graph Builder
 
 Analyzes Python source files to build a dependency graph of decorated functions.
 This enables automatic discovery of component relationships without manual configuration.
@@ -8,7 +8,7 @@ The graph is represented as a simple dict structure that can be easily serialize
 and optionally converted to NetworkX for advanced visualization.
 
 Usage:
-    from sleuth.analysis import DependencyGraphBuilder, analyze_codebase
+    from squirt.analysis import DependencyGraphBuilder, analyze_codebase
 
     # Quick analysis
     graph, builder = analyze_codebase("./src")

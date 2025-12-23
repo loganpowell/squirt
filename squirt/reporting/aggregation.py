@@ -1,11 +1,11 @@
 """
-Sleuth Aggregation Engine
+Squirt Aggregation Engine
 
 Aggregates metrics across components and generates reports.
 Supports both flat and graph-based hierarchical aggregation.
 
 Usage:
-    from sleuth.reporting import aggregate_results, generate_heartbeat
+    from squirt.reporting import aggregate_results, generate_heartbeat
 
     # Simple: from list of results
     results = get_results()
@@ -13,7 +13,7 @@ Usage:
     print(heartbeat.to_json())
 
     # Advanced: with dependency graph
-    from sleuth.analysis import analyze_codebase
+    from squirt.analysis import analyze_codebase
     graph = analyze_codebase("./src")
     heartbeat = generate_heartbeat_from_graph(graph, results_dir="./results")
 """

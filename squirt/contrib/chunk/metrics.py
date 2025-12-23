@@ -1,10 +1,10 @@
 """
-Chunking Metrics for Sleuth
+Chunking Metrics for Squirt
 
 Metrics for text/document chunking operations - chunk counts, sizes, overlap, etc.
 
 Usage:
-    from sleuth.contrib.chunk import chunk
+    from squirt.contrib.chunk import chunk
 
     @track(metrics=[
         chunk.count.from_output("metadata.chunk_count"),
@@ -14,7 +14,7 @@ Usage:
         ...
 """
 
-from sleuth.plugins import MetricBuilder, AggregationType, SystemMetric
+from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
 
 
 class ChunkMetrics:

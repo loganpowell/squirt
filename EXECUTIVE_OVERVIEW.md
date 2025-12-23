@@ -1,4 +1,4 @@
-# Sleuth: Testing for AI Systems
+# Squirt: Testing for AI Systems
 
 ## The Problem
 
@@ -132,7 +132,7 @@ Mermaid treemaps show bottlenecks instantly
 
 ## Competitive Position
 
-| vs                      | Limitation            | Sleuth Advantage                           |
+| vs                      | Limitation            | Squirt Advantage                           |
 | ----------------------- | --------------------- | ------------------------------------------ |
 | **Traditional testing** | Binary pass/fail      | Trend-based with variance tolerance        |
 | **APM tools**           | Production monitoring | Dev-time, component-level, test-integrated |

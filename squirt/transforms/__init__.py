@@ -1,13 +1,13 @@
 """
-Sleuth Transforms Module
+Squirt Transforms Module
 
 Reusable transform functions for common metrics.
 Each transform takes (inputs: Dict, output: Any) -> metric_value.
 
 Usage:
-    from sleuth.transforms import runtime_transform, token_cost_transform
-    from sleuth.transforms.validation import json_valid, has_required_fields
-    from sleuth.transforms.similarity import expected_match, compute_similarity
+    from squirt.transforms import runtime_transform, token_cost_transform
+    from squirt.transforms.validation import json_valid, has_required_fields
+    from squirt.transforms.similarity import expected_match, compute_similarity
 
     @track(metrics=[
         Metric("runtime_ms", runtime_transform, AggregationType.SUM),

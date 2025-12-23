@@ -8,7 +8,7 @@ Tests Phase 1 components:
 - transforms.py: New transform functions
 """
 
-from sleuth import (
+from squirt import (
     SystemMetric,
     get_aggregation_type,
     should_invert,
@@ -16,7 +16,7 @@ from sleuth import (
     aggregate_values,
     aggregate_by_system_metrics,
 )
-from sleuth.transforms import (
+from squirt.transforms import (
     token_cost_transform,
     total_tokens_transform,
     memory_usage_transform,

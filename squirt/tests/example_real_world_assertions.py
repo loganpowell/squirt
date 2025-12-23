@@ -5,8 +5,8 @@ This shows how to add assert_passes() to existing instrumented components
 to block PRs when quality falls below thresholds.
 """
 
-from sleuth import m, track
-from sleuth.contrib.data import data
+from squirt import m, track
+from squirt.contrib.data import data
 
 
 # BEFORE: Component with regular metrics only
@@ -105,7 +105,7 @@ def test_extract_text_blocks_bad_quality():
 
     This prevents the PR from merging until quality is fixed.
     """
-    from sleuth import set_test_context
+    from squirt import set_test_context
 
     set_test_context(
         test_case_id="tc_001",

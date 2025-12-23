@@ -1,5 +1,5 @@
 """
-Sleuth Pytest Plugin
+Squirt Pytest Plugin
 
 Zero-config metrics collection for pytest. Just add to conftest.py:
 
@@ -7,7 +7,7 @@ Zero-config metrics collection for pytest. Just add to conftest.py:
 
 Or with custom paths:
 
-    from sleuth.pytest import configure_sleuth
+    from squirt.pytest import configure_sleuth
 
     configure_sleuth(
         results_dir="tests/results",
@@ -83,7 +83,7 @@ def configure_sleuth(
 
     Example:
         # conftest.py
-        from sleuth.pytest import configure_sleuth
+        from squirt.pytest import configure_sleuth
 
         configure_sleuth(
             default_source="tests/data/expectations.json",
@@ -122,7 +122,7 @@ _executed_components: set = set()
 
 def pytest_addoption(parser: "Parser") -> None:
     """Add sleuth command-line options."""
-    group = parser.getgroup("sleuth", "Sleuth metrics collection")
+    group = parser.getgroup("sleuth", "Squirt metrics collection")
     group.addoption(
         "--collect-metrics",
         action="store_true",
@@ -220,11 +220,11 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     if expectations_path and expectations_path.exists():
         configure_expectations(path=expectations_path)
         if _sleuth_config.get("verbose", True):
-            print(f"\n📊 Sleuth configured")
+            print(f"\n📊 Squirt configured")
             print(f"   Results: {results_dir}")
             print(f"   Expectations: {expectations_path}")
     elif _sleuth_config.get("verbose", True):
-        print(f"\n📊 Sleuth configured (no expectations file)")
+        print(f"\n📊 Squirt configured (no expectations file)")
         print(f"   Results: {results_dir}")
 
 

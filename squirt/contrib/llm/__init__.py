@@ -1,10 +1,10 @@
 """
-LLM Metrics Plugin for Sleuth
+LLM Metrics Plugin for Squirt
 
 Metrics for LLM API calls - tokens, costs, latency, and quality evaluations.
 
 Usage:
-    from sleuth.contrib.llm import llm
+    from squirt.contrib.llm import llm
 
     @track(metrics=[
         llm.total_tokens.from_output("usage.total_tokens"),

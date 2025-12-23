@@ -1,8 +1,8 @@
-# Sleuth 🔍
+# Squirt 🔍
 
 **Metrics collection and analysis library for component testing**
 
-Sleuth provides a unified framework for instrumenting code, collecting metrics, analyzing performance, and generating actionable reports. Built for CI/CD pipelines with first-class GitHub Actions support.
+Squirt provides a unified framework for instrumenting code, collecting metrics, analyzing performance, and generating actionable reports. Built for CI/CD pipelines with first-class GitHub Actions support.
 
 ## Features
 
@@ -31,7 +31,7 @@ pip install git+https://github.com/loganpowell/squirt.git
 ### Basic Usage
 
 ```python
-from sleuth import m, track
+from squirt import m, track
 
 @track(
     expects="text",  # Input key from test expectations
@@ -57,7 +57,7 @@ The `@track` decorator automatically:
 
 ## Pytest Integration
 
-Sleuth provides a zero-config pytest plugin that handles everything automatically.
+Squirt provides a zero-config pytest plugin that handles everything automatically.
 
 ### Zero-Config Setup
 
@@ -77,7 +77,7 @@ That's it! The plugin auto-discovers:
 
 ```python
 # conftest.py
-from sleuth.pytest import configure_sleuth
+from squirt.pytest import configure_sleuth
 
 configure_sleuth(
     results_dir="custom/results",
@@ -133,7 +133,7 @@ def test_my_component(set_context, expectations_data):
 
 ## IDE Support
 
-Sleuth is designed for robust IDE autocomplete with Pylance/Pyright. However, there's an important caveat:
+Squirt is designed for robust IDE autocomplete with Pylance/Pyright. However, there's an important caveat:
 
 ### ⚠️ Long Metrics Lists
 
@@ -171,7 +171,7 @@ def my_component(text: str) -> dict:
 Use `MetricBuilder` with explicit type annotations for full IDE support:
 
 ```python
-from sleuth.plugins import MetricBuilder, AggregationType, SystemMetric
+from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
 
 class MyDomainMetrics:
     """Custom metrics for my domain."""
@@ -214,7 +214,7 @@ Key points for plugin authors:
 ### Configuration
 
 ```python
-from sleuth import configure
+from squirt import configure
 
 configure(
     results_dir="./tests/results",
@@ -268,7 +268,7 @@ sleuth/
 
 ## Metric Categories
 
-Sleuth organizes metrics into categories for proper aggregation:
+Squirt organizes metrics into categories for proper aggregation:
 
 | Category        | Metrics                                  | Aggregation |
 | --------------- | ---------------------------------------- | ----------- |

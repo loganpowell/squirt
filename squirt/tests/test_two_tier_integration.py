@@ -13,7 +13,7 @@ import pytest
 # Add backend to path
 BACKEND_DIR = Path(__file__).parent.parent.parent
 
-from sleuth import (
+from squirt import (
     generate_heartbeat_from_graph,
     aggregate_by_system_metrics,
     DependencyGraphBuilder,
@@ -300,7 +300,7 @@ class TestMetricsReporting:
 
     def test_heartbeat_generation(self, tmp_path):
         """Test that heartbeat can be generated from results."""
-        from sleuth import (
+        from squirt import (
             generate_heartbeat_from_graph,
             DependencyGraphBuilder,
             MetricsClient,
@@ -334,7 +334,7 @@ class TestMetricsReporting:
 
     def test_hierarchical_report_format(self, tmp_path):
         """Test the hierarchical report format."""
-        from sleuth import save_hierarchical_reports
+        from squirt import save_hierarchical_reports
 
         # Create sample node metrics
         node_metrics = {

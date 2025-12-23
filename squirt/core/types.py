@@ -1,5 +1,5 @@
 """
-Core type definitions for Sleuth.
+Core type definitions for Squirt.
 
 This module provides the fundamental types used throughout the library:
 - AggregationType: How metrics aggregate across components

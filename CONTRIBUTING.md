@@ -1,4 +1,4 @@
-# Sleuth Development
+# Squirt Development
 
 ## Project Structure
 

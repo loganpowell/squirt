@@ -1,6 +1,6 @@
 # Reporting Guide
 
-Sleuth provides comprehensive reporting capabilities for metrics visualization and analysis.
+Squirt provides comprehensive reporting capabilities for metrics visualization and analysis.
 
 ## Report Types
 
@@ -94,7 +94,7 @@ sleuth report compare [OPTIONS]
 ### MetricsReporter Class
 
 ```python
-from sleuth.reporting import MetricsReporter
+from squirt.reporting import MetricsReporter
 from pathlib import Path
 
 reporter = MetricsReporter(
@@ -116,7 +116,7 @@ reporter.save_historical_snapshot()
 ### Programmatic Report Generation
 
 ```python
-from sleuth.reporting import (
+from squirt.reporting import (
     generate_heartbeat,
     aggregate_results,
     MetricsReporter,
@@ -139,7 +139,7 @@ print(reporter.generate_full_report())
 
 ## Insights System
 
-Sleuth automatically analyzes metrics and generates actionable insights.
+Squirt automatically analyzes metrics and generates actionable insights.
 
 ### Insight Severity Levels
 
@@ -163,7 +163,7 @@ Sleuth automatically analyzes metrics and generates actionable insights.
 ### Using InsightGenerator
 
 ```python
-from sleuth.reporting import InsightGenerator, SystemHeartbeat
+from squirt.reporting import InsightGenerator, SystemHeartbeat
 
 # Create heartbeat from metrics
 heartbeat = SystemHeartbeat(
@@ -192,7 +192,7 @@ for insight in insights:
 ### Custom Insights
 
 ```python
-from sleuth.reporting.insights import Insight, Severity
+from squirt.reporting.insights import Insight, Severity
 
 def check_custom_metric(heartbeat, history):
     """Custom insight check."""
@@ -332,7 +332,7 @@ with open(history_file) as f:
 Metrics are aggregated to system level based on category:
 
 ```python
-from sleuth.reporting import aggregate_by_system_metrics
+from squirt.reporting import aggregate_by_system_metrics
 
 # Component metrics
 components = {
@@ -348,8 +348,8 @@ system_metrics = aggregate_by_system_metrics(components)
 ### Custom Aggregation
 
 ```python
-from sleuth.reporting import aggregate_values
-from sleuth.core.types import AggregationType
+from squirt.reporting import aggregate_values
+from squirt.core.types import AggregationType
 
 values = [0.9, 0.95, 0.85]
 

@@ -1,13 +1,13 @@
 # Metrics Guide
 
-Sleuth provides a rich set of built-in metrics and an extensible system for creating custom metrics.
+Squirt provides a rich set of built-in metrics and an extensible system for creating custom metrics.
 
 ## Built-in Metrics
 
 All built-in metrics are available through the `m` namespace:
 
 ```python
-from sleuth import m
+from squirt import m
 ```
 
 ### Performance Metrics
@@ -101,7 +101,7 @@ Metrics are organized into categories that determine how they're aggregated:
 ### SystemMetric (Aggregated to System Level)
 
 ```python
-from sleuth.categories import SystemMetric
+from squirt.categories import SystemMetric
 
 class CustomSystemMetric(SystemMetric):
     """Metrics that aggregate to system-level reporting."""
@@ -113,7 +113,7 @@ System metrics include: `accuracy`, `error_rate`, `runtime_ms`, `memory_mb`, `co
 ### QualityMetric
 
 ```python
-from sleuth.categories import QualityMetric
+from squirt.categories import QualityMetric
 
 @track(metrics=[
     m.accuracy,      # QualityMetric
@@ -126,7 +126,7 @@ Quality metrics are averaged when aggregating across components.
 ### PerformanceMetric
 
 ```python
-from sleuth.categories import PerformanceMetric
+from squirt.categories import PerformanceMetric
 
 @track(metrics=[
     m.runtime_ms,  # PerformanceMetric - summed
@@ -141,7 +141,7 @@ Performance metrics are summed (runtime) or maxed (memory, CPU).
 ### Simple Custom Metric
 
 ```python
-from sleuth.core.types import Metric, AggregationType
+from squirt.core.types import Metric, AggregationType
 
 # Define a custom metric
 custom_score = Metric(
@@ -160,7 +160,7 @@ def my_function():
 ### Custom Metric with Validation
 
 ```python
-from sleuth.core.types import Metric, MetricResult, AggregationType
+from squirt.core.types import Metric, MetricResult, AggregationType
 
 class ConfidenceMetric(Metric):
     """Custom metric for confidence scores."""
@@ -190,7 +190,7 @@ For domain-specific metrics, use the contrib system:
 
 ```python
 # sleuth/contrib/tax.py
-from sleuth.core.types import Metric, AggregationType
+from squirt.core.types import Metric, AggregationType
 
 class TaxMetrics:
     """Tax domain metrics."""
@@ -208,7 +208,7 @@ class TaxMetrics:
 tax = TaxMetrics()
 
 # Usage
-from sleuth.contrib.tax import tax
+from squirt.contrib.tax import tax
 
 @track(metrics=[
     tax.field_accuracy.from_output("accuracy"),

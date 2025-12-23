@@ -3,8 +3,8 @@ Tests for assertion metrics that fail tests when metrics indicate errors.
 """
 
 import pytest
-from sleuth import m, track, configure_metrics, set_test_context
-from sleuth.core.decorator import clear_results
+from squirt import m, track, configure_metrics, set_test_context
+from squirt.core.decorator import clear_results
 
 
 class TestAssertionMetrics:
@@ -143,7 +143,7 @@ class TestAssertionMetrics:
             component_that_fails()
 
         # But metrics should still be recorded
-        from sleuth.core.decorator import get_results
+        from squirt.core.decorator import get_results
 
         results = get_results()
         assert len(results) == 1

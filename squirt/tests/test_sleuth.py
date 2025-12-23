@@ -1,16 +1,16 @@
 """
-Tests for the Sleuth metrics library.
+Tests for the Squirt metrics library.
 """
 
 import pytest
-from sleuth import m, track, AggregationType, SystemMetric
-from sleuth.metrics import MetricBuilder
-from sleuth.plugins import MetricNamespace
-from sleuth.core.decorator import get_results, clear_results
-from sleuth.contrib.data import data
-from sleuth.contrib.vector import vector
-from sleuth.contrib.chunk import chunk
-from sleuth.contrib.llm import llm
+from squirt import m, track, AggregationType, SystemMetric
+from squirt.metrics import MetricBuilder
+from squirt.plugins import MetricNamespace
+from squirt.core.decorator import get_results, clear_results
+from squirt.contrib.data import data
+from squirt.contrib.vector import vector
+from squirt.contrib.chunk import chunk
+from squirt.contrib.llm import llm
 
 
 class TestBuiltinMetrics:
@@ -275,7 +275,7 @@ class TestReporting:
 
     def test_generate_heartbeat(self):
         """Test heartbeat generation."""
-        from sleuth.reporting import generate_heartbeat
+        from squirt.reporting import generate_heartbeat
 
         @track(
             metrics=[
@@ -298,7 +298,7 @@ class TestReporting:
 
     def test_aggregate_results(self):
         """Test metric aggregation."""
-        from sleuth.reporting import aggregate_results
+        from squirt.reporting import aggregate_results
 
         @track(
             metrics=[
@@ -325,7 +325,7 @@ class TestReporting:
 
     def test_heartbeat_to_json(self):
         """Test heartbeat JSON serialization."""
-        from sleuth.reporting import generate_heartbeat
+        from squirt.reporting import generate_heartbeat
         import json
 
         @track(metrics=[m.runtime_ms.from_output("runtime")])
@@ -353,7 +353,7 @@ class TestInsights:
 
     def test_healthy_system_no_insights(self):
         """Test that healthy system generates no critical insights."""
-        from sleuth.reporting import generate_heartbeat, InsightGenerator, Severity
+        from squirt.reporting import generate_heartbeat, InsightGenerator, Severity
 
         @track(
             metrics=[
@@ -379,7 +379,7 @@ class TestInsights:
 
     def test_low_accuracy_generates_insight(self):
         """Test that low accuracy generates critical insight."""
-        from sleuth.reporting import generate_heartbeat, InsightGenerator, Severity
+        from squirt.reporting import generate_heartbeat, InsightGenerator, Severity
 
         @track(
             metrics=[
@@ -403,7 +403,7 @@ class TestInsights:
 
     def test_high_error_rate_generates_insight(self):
         """Test that high error rate generates critical insight."""
-        from sleuth.reporting import generate_heartbeat, InsightGenerator, Severity
+        from squirt.reporting import generate_heartbeat, InsightGenerator, Severity
 
         @track(
             metrics=[
@@ -427,7 +427,7 @@ class TestInsights:
 
     def test_generate_insight_report(self):
         """Test markdown report generation."""
-        from sleuth.reporting import generate_heartbeat, generate_insight_report
+        from squirt.reporting import generate_heartbeat, generate_insight_report
 
         @track(
             metrics=[
@@ -458,8 +458,8 @@ class TestMetricsClient:
 
     def test_client_basic(self):
         """Test basic client operations."""
-        from sleuth import MetricsClient
-        from sleuth.core.types import MetricResult
+        from squirt import MetricsClient
+        from squirt.core.types import MetricResult
         import time
 
         client = MetricsClient()
@@ -482,8 +482,8 @@ class TestMetricsClient:
 
     def test_client_hierarchical_report(self):
         """Test hierarchical report generation."""
-        from sleuth import MetricsClient
-        from sleuth.core.types import MetricResult
+        from squirt import MetricsClient
+        from squirt.core.types import MetricResult
         import time
 
         client = MetricsClient()
@@ -509,8 +509,8 @@ class TestExtensions:
 
     def test_register_aggregation(self):
         """Test registering custom aggregation function."""
-        from sleuth import register_aggregation
-        from sleuth.extensions import apply_aggregation
+        from squirt import register_aggregation
+        from squirt.extensions import apply_aggregation
 
         def geometric_mean(values):
             import math
@@ -526,8 +526,8 @@ class TestExtensions:
 
     def test_register_system_metric(self):
         """Test registering custom system metric."""
-        from sleuth import register_system_metric
-        from sleuth.extensions import get_system_metric
+        from squirt import register_system_metric
+        from squirt.extensions import get_system_metric
 
         register_system_metric("quality_score", "Quality Score")
 
@@ -535,7 +535,7 @@ class TestExtensions:
 
     def test_list_extensions(self):
         """Test listing registered extensions."""
-        from sleuth.extensions import list_aggregations, list_system_metrics
+        from squirt.extensions import list_aggregations, list_system_metrics
 
         aggs = list_aggregations()
         metrics = list_system_metrics()

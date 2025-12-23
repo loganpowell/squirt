@@ -3,8 +3,8 @@ Test that error_free automatically fails tests when errors occur.
 """
 
 import pytest
-from sleuth import m, track, configure_metrics, set_test_context
-from sleuth.core.decorator import clear_results
+from squirt import m, track, configure_metrics, set_test_context
+from squirt.core.decorator import clear_results
 
 
 def test_error_free_fails_automatically_on_error(tmp_path):

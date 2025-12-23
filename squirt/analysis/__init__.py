@@ -1,11 +1,11 @@
 """
-Sleuth Analysis Module
+Squirt Analysis Module
 
 AST-driven analysis for discovering component relationships and building
 dependency graphs from instrumented code.
 
 Usage:
-    from sleuth.analysis import (
+    from squirt.analysis import (
         DependencyGraphBuilder,
         analyze_codebase,
         visualize_graph,

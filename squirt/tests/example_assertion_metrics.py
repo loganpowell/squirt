@@ -5,7 +5,7 @@ This example shows how to use m.assert_passes() to fail tests when
 critical metrics indicate errors, preventing bad code from being merged.
 """
 
-from sleuth import m, track
+from squirt import m, track
 
 
 # Example 1: Structure validation that blocks PRs
@@ -189,7 +189,7 @@ When you run pytest in CI:
 """
 # tests/test_pipeline.py
 
-from sleuth import configure_expectations, set_test_context
+from squirt import configure_expectations, set_test_context
 
 def test_extract_tax_rule():
     # Setup

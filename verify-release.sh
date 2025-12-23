@@ -28,7 +28,7 @@ info() {
     echo -e "${YELLOW}ℹ️  $1${NC}"
 }
 
-echo "🔍 Sleuth Pre-Release Verification"
+echo "🔍 Squirt Pre-Release Verification"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo
 

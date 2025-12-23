@@ -1,11 +1,11 @@
 """
-Sleuth Metrics Client
+Squirt Metrics Client
 
 Session-level client for managing metrics collection and report generation.
 Supports both in-memory and file-based persistence.
 
 Usage:
-    from sleuth import MetricsClient
+    from squirt import MetricsClient
 
     # In-memory only
     client = MetricsClient()

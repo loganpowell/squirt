@@ -1,12 +1,12 @@
 """
-Track Decorator for Sleuth
+Track Decorator for Squirt
 
 The @track decorator instruments components to collect metrics.
 It automatically tracks and records runtime_ms, memory_mb, and cpu_percent -
 no need to add these to the metrics list!
 
 Usage:
-    from sleuth import m, track, Expects
+    from squirt import m, track, Expects
 
     @track(
         expects=Expects(input_key="description", output_key="bullets"),
@@ -204,7 +204,7 @@ def record_result(result: MetricResult) -> None:
 
     # Also record to global MetricsClient if available
     try:
-        from sleuth import _metrics_client
+        from squirt import _metrics_client
 
         client = _metrics_client.get()
         if client is not None:

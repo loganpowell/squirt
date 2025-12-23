@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Sleuth Release Script
+# Squirt Release Script
 # Usage: ./release.sh [major|minor|patch] [--dry-run]
 #
 # This script:

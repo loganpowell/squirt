@@ -1,10 +1,10 @@
 """
-Chunking Metrics Plugin for Sleuth
+Chunking Metrics Plugin for Squirt
 
 Metrics for text/document chunking operations.
 
 Usage:
-    from sleuth.contrib.chunk import chunk
+    from squirt.contrib.chunk import chunk
 
     @track(metrics=[
         chunk.count.from_output("metadata.chunk_count"),

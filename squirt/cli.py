@@ -1,5 +1,5 @@
 """
-Sleuth CLI
+Squirt CLI
 
 Command-line interface for generating reports and analyzing metrics.
 
@@ -397,7 +397,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         prog="sleuth",
-        description="Sleuth - Metrics collection and analysis",
+        description="Squirt - Metrics collection and analysis",
     )
     parser.add_argument(
         "--results-dir",

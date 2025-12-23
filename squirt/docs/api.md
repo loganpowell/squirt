@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API documentation for the Sleuth library.
+Complete API documentation for the Squirt library.
 
 ## Core Module
 
@@ -9,7 +9,7 @@ Complete API documentation for the Sleuth library.
 Main entry point for the library.
 
 ```python
-from sleuth import (
+from squirt import (
     # Configuration
     configure,
     get_config,
@@ -57,7 +57,7 @@ Configure global sleuth settings.
 **Example:**
 
 ```python
-from sleuth import configure
+from squirt import configure
 
 configure(
     results_dir="./tests/results",
@@ -210,7 +210,7 @@ Get the current test context.
 Built-in metrics available through the `m` namespace:
 
 ```python
-from sleuth import m
+from squirt import m
 
 # Performance
 m.runtime_ms      # Execution time in milliseconds
@@ -390,7 +390,7 @@ Get all recorded results.
 ### sleuth.reporting
 
 ```python
-from sleuth.reporting import (
+from squirt.reporting import (
     # Aggregation
     aggregate_values,
     aggregate_results,
@@ -589,7 +589,7 @@ Find components using more than threshold of total resources.
 ### sleuth.analysis
 
 ```python
-from sleuth.analysis import (
+from squirt.analysis import (
     DependencyGraph,
     analyze_codebase,
 )
@@ -690,7 +690,7 @@ Options:
 Domain-specific metrics for tax processing.
 
 ```python
-from sleuth.contrib.tax import tax
+from squirt.contrib.tax import tax
 
 tax.field_accuracy    # Tax field extraction accuracy
 tax.rule_coverage     # Rule coverage percentage
@@ -715,18 +715,18 @@ COST_INCREASE = 0.25         # 25% increase triggers warning
 
 ## Exceptions
 
-### SleuthError
+### SquirtError
 
 ```python
-class SleuthError(Exception):
+class SquirtError(Exception):
     """Base exception for sleuth errors."""
     pass
 
-class MetricExtractionError(SleuthError):
+class MetricExtractionError(SquirtError):
     """Failed to extract metric from output."""
     pass
 
-class ConfigurationError(SleuthError):
+class ConfigurationError(SquirtError):
     """Invalid configuration."""
     pass
 ```
@@ -736,7 +736,7 @@ class ConfigurationError(SleuthError):
 ## Type Hints
 
 ```python
-from sleuth.core.types import (
+from squirt.core.types import (
     Metric,
     MetricResult,
     AggregationType,
@@ -744,7 +744,7 @@ from sleuth.core.types import (
     MetricExtractor,
 )
 
-from sleuth.reporting import (
+from squirt.reporting import (
     SystemHeartbeat,
     ComponentReport,
     Insight,

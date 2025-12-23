@@ -1,6 +1,6 @@
 # Release Process
 
-This document describes how to release a new version of Sleuth to PyPI.
+This document describes how to release a new version of Squirt to PyPI.
 
 ## Prerequisites
 

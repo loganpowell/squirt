@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 import pytest
 
-from sleuth import (
+from squirt import (
     AggregationType,
     Metric,
     MetricResult,
@@ -34,7 +34,7 @@ from sleuth import (
     m,
     track,
 )
-from sleuth.analysis import (
+from squirt.analysis import (
     DecoratedFunctionVisitor,
     DependencyGraph,
     DependencyGraphBuilder,
@@ -232,7 +232,7 @@ class TestTrackDecorator:
 
         result = slow_function()
 
-        # Sleuth v2: decorator auto-injects resource metrics into output.metadata
+        # Squirt v2: decorator auto-injects resource metrics into output.metadata
         # The original result is preserved, with metadata added
         assert result["result"] == "done"
         assert "metadata" in result
@@ -366,7 +366,7 @@ class TestTrackDecorator:
         def test_function():
             return {}
 
-        # Sleuth stores these attributes directly
+        # Squirt stores these attributes directly
         assert hasattr(test_function, "_expects")
         assert hasattr(test_function, "_metrics")
         assert test_function._expects == "field"
@@ -469,7 +469,7 @@ class TestDependencyGraphBuilder:
         """Builder should identify functions with @track decorator."""
         source_code = textwrap.dedent(
             """
-            from sleuth import track, m
+            from squirt import track, m
 
             @track(
                 metrics=[m.accuracy.compute(lambda i, o: 1.0)]
@@ -496,7 +496,7 @@ class TestDependencyGraphBuilder:
         """Builder should extract function parameter names."""
         source_code = textwrap.dedent(
             """
-            from sleuth import track
+            from squirt import track
 
             @track(metrics=[])
             def func_with_params(arg1: str, arg2: int, arg3) -> dict:
@@ -517,7 +517,7 @@ class TestDependencyGraphBuilder:
         """Builder should extract return type annotation."""
         source_code = textwrap.dedent(
             """
-            from sleuth import track
+            from squirt import track
 
             @track(metrics=[])
             def func_with_return() -> dict:
@@ -543,7 +543,7 @@ class TestDependencyGraphBuilder:
         """Builder should identify functions called within decorated functions."""
         source_code = textwrap.dedent(
             """
-            from sleuth import track
+            from squirt import track
 
             @track(metrics=[])
             def parent_function() -> dict:
@@ -576,7 +576,7 @@ class TestDependencyGraphBuilder:
         """Builder should construct a directed graph of dependencies."""
         source_code = textwrap.dedent(
             """
-            from sleuth import track
+            from squirt import track
 
             @track(metrics=[])
             def root_function() -> dict:
@@ -616,7 +616,7 @@ class TestDependencyGraphBuilder:
         """Builder should identify root nodes (not called by others)."""
         source_code = textwrap.dedent(
             """
-            from sleuth import track
+            from squirt import track
 
             @track(metrics=[])
             def root_a() -> dict:
@@ -656,7 +656,7 @@ class TestDependencyGraphBuilder:
 
             source_code = textwrap.dedent(
                 """
-                from sleuth import track
+                from squirt import track
 
                 @track(metrics=[])
                 def some_function() -> dict:
@@ -677,7 +677,7 @@ class TestDependencyGraphBuilder:
         """Builder should identify async decorated functions."""
         source_code = textwrap.dedent(
             """
-            from sleuth import track
+            from squirt import track
 
             @track(metrics=[])
             async def async_function() -> dict:

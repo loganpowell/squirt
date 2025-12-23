@@ -1,10 +1,10 @@
 """
-Data Structure Metrics Plugin for Sleuth
+Data Structure Metrics Plugin for Squirt
 
 Generic metrics for structured data analysis.
 
 Usage:
-    from sleuth.contrib.data import data
+    from squirt.contrib.data import data
 
     @track(metrics=[
         data.field_count.from_output("metadata.field_count"),

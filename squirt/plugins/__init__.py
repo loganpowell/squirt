@@ -1,10 +1,10 @@
 """
-Sleuth Plugin System
+Squirt Plugin System
 
 Provides base classes for creating custom metric namespaces.
 
 Recommended pattern for IDE support:
-    from sleuth.plugins import MetricBuilder, AggregationType, SystemMetric
+    from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
 
     class MyMetrics:
         '''My custom metrics with full IDE autocomplete.'''
@@ -27,7 +27,7 @@ Recommended pattern for IDE support:
     # Usage: my.custom_accuracy.from_output("score")
 
 Legacy pattern (still works, but less IDE support in decorator contexts):
-    from sleuth.plugins import MetricNamespace, MetricBuilder
+    from squirt.plugins import MetricNamespace, MetricBuilder
 
     class MyMetrics(MetricNamespace):
         @property

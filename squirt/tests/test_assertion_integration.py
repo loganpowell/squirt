@@ -7,8 +7,8 @@ when they detect errors in actual pipeline components.
 
 import pytest
 from pathlib import Path
-from sleuth import configure_expectations, set_test_context, m, track
-from sleuth.core.decorator import clear_results, get_results
+from squirt import configure_expectations, set_test_context, m, track
+from squirt.core.decorator import clear_results, get_results
 
 
 class TestAssertionMetricsIntegration:

@@ -1,10 +1,10 @@
 """
 Built-in Metrics Module
 
-Convenience re-export of metrics from sleuth.metrics with a shorter name.
+Convenience re-export of metrics from squirt.metrics with a shorter name.
 
 Usage:
-    from sleuth import m
+    from squirt import m
 
     @track(metrics=[
         m.runtime_ms.from_output("metadata.runtime_ms"),
@@ -30,7 +30,7 @@ class _BuiltinMetrics:
     """
     Built-in metrics for common use cases.
 
-    This is a convenience wrapper that re-exports metrics from sleuth.metrics
+    This is a convenience wrapper that re-exports metrics from squirt.metrics
     with explicit type annotations for IDE autocomplete support.
     """
 

@@ -1,5 +1,5 @@
 """
-Built-in Metrics for Sleuth
+Built-in Metrics for Squirt
 
 The 5 most commonly used metrics, available as `m.metric_name`:
 - runtime_ms: Execution time (SUM → LATENCY)
@@ -9,7 +9,7 @@ The 5 most commonly used metrics, available as `m.metric_name`:
 - expected_match: Output matches expected (AVERAGE → ACCURACY)
 
 Usage:
-    from sleuth import m
+    from squirt import m
 
     @track(metrics=[
         m.runtime_ms.from_output("metadata.runtime_ms"),

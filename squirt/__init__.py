@@ -1,10 +1,10 @@
-"""Sleuth - Metrics Library for Component Testing
+"""Squirt - Metrics Library for Component Testing
 
 A framework for collecting, aggregating, and analyzing metrics from instrumented components.
 Uses a unified base class pattern for both built-in and custom metrics.
 
 Usage:
-    from sleuth import m, track, configure
+    from squirt import m, track, configure
 
     # Configure sleuth (optional)
     configure(
@@ -23,7 +23,7 @@ Usage:
         return {"result": process(text), "metadata": {...}}
 
 Plugin Usage:
-    from sleuth.contrib.tax import tax
+    from squirt.contrib.tax import tax
 
     @track(metrics=[
         m.runtime_ms.from_output("metadata.runtime_ms"),
@@ -82,7 +82,7 @@ def configure(
         expectations_file: Path to expectations.json file
 
     Example:
-        from sleuth import configure
+        from squirt import configure
 
         configure(
             results_dir="./tests/metrics/results",

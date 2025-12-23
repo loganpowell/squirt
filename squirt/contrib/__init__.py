@@ -1,1 +1,1 @@
-"""Sleuth contrib plugins for domain-specific metrics."""
+"""Squirt contrib plugins for domain-specific metrics."""

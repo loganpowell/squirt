@@ -1,1 +1,1 @@
-"""Core types for Sleuth metrics."""
+"""Core types for Squirt metrics."""

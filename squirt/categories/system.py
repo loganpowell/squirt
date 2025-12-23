@@ -1,5 +1,5 @@
 """
-System metric categories for Sleuth.
+System metric categories for Squirt.
 
 Canonical system-level metrics that aggregate across the entire pipeline.
 """

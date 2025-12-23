@@ -1,10 +1,10 @@
 """
-Sleuth Reporting Module
+Squirt Reporting Module
 
 Provides aggregation, heartbeat generation, and insights analysis.
 
 Usage:
-    from sleuth.reporting import (
+    from squirt.reporting import (
         generate_heartbeat,
         aggregate_results,
         InsightGenerator,
@@ -17,7 +17,7 @@ Usage:
     heartbeat.save("reports/heartbeat.json")
 
     # Advanced: With dependency graph
-    from sleuth.analysis import analyze_codebase
+    from squirt.analysis import analyze_codebase
     graph = analyze_codebase("./src")
     heartbeat = generate_heartbeat_from_graph(graph, "./results")
 

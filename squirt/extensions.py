@@ -1,10 +1,10 @@
 """
-Sleuth Extension Registry
+Squirt Extension Registry
 
 Allows registering custom aggregation types and system metrics.
 
 Usage:
-    from sleuth.extensions import register_aggregation, register_system_metric
+    from squirt.extensions import register_aggregation, register_system_metric
 
     # Register custom aggregation
     def geometric_mean(values: List[float]) -> float:
@@ -17,7 +17,7 @@ Usage:
     register_system_metric("quality_score", "Quality Score")
 
     # Use in metrics
-    from sleuth import m
+    from squirt import m
 
     custom = m.custom("my_metric", aggregation="geometric_mean")
 """

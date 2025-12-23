@@ -9,7 +9,7 @@ The `@track` decorator is the primary way to instrument functions for metrics co
 ### Basic Usage
 
 ```python
-from sleuth import track, m
+from squirt import track, m
 
 @track(metrics=[
     m.runtime_ms.from_output("metadata.runtime_ms"),
@@ -60,7 +60,7 @@ The expectations system allows you to compare function outputs against expected 
 2. Configure sleuth to use it:
 
 ```python
-from sleuth import configure
+from squirt import configure
 
 configure(expectations_file="./tests/data/expectations.json")
 ```
@@ -68,7 +68,7 @@ configure(expectations_file="./tests/data/expectations.json")
 ### Using Expects
 
 ```python
-from sleuth import track, m, Expects
+from squirt import track, m, Expects
 
 @track(
     expects=Expects(
@@ -97,7 +97,7 @@ def extract_bullets(description: str) -> dict:
 ### Custom Comparison Functions
 
 ```python
-from sleuth import Expects
+from squirt import Expects
 
 def custom_compare(actual, expected) -> float:
     """Custom comparison returning accuracy 0-1."""
@@ -118,7 +118,7 @@ def my_function(text: str) -> dict:
 
 ## Component Hierarchy
 
-Sleuth supports hierarchical component relationships for better aggregation.
+Squirt supports hierarchical component relationships for better aggregation.
 
 ### Defining Parent-Child Relationships
 
@@ -169,7 +169,7 @@ Set test context to associate metrics with specific test runs.
 
 ```python
 import pytest
-from sleuth import set_test_context, get_test_context
+from squirt import set_test_context, get_test_context
 
 @pytest.fixture(autouse=True)
 def sleuth_context(request):
@@ -184,7 +184,7 @@ def sleuth_context(request):
 ### Manual Context
 
 ```python
-from sleuth import set_test_context
+from squirt import set_test_context
 
 set_test_context(
     test_name="test_extraction",
@@ -200,7 +200,7 @@ For more control, use the MetricsClient directly.
 ### Basic Client Usage
 
 ```python
-from sleuth import configure_metrics, get_metrics_client
+from squirt import configure_metrics, get_metrics_client
 
 # Configure
 configure_metrics(
@@ -228,7 +228,7 @@ client.save()
 ### Client with Context Manager
 
 ```python
-from sleuth.client import MetricsClient
+from squirt.client import MetricsClient
 
 with MetricsClient(results_dir="./results") as client:
     # Run your tests
@@ -242,10 +242,10 @@ with MetricsClient(results_dir="./results") as client:
 
 ## Dependency Graph Analysis
 
-Sleuth can analyze your codebase to build dependency graphs.
+Squirt can analyze your codebase to build dependency graphs.
 
 ```python
-from sleuth.analysis import DependencyGraph
+from squirt.analysis import DependencyGraph
 
 # Build graph from decorated functions
 graph = DependencyGraph.from_codebase("./src")
@@ -266,7 +266,7 @@ critical_path = graph.get_critical_path()
 Create specialized decorators for your domain:
 
 ```python
-from sleuth import track, m, Expects
+from squirt import track, m, Expects
 from functools import wraps
 
 def track_llm_call(model: str, max_tokens: int = 1000):
