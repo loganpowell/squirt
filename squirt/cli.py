@@ -5,13 +5,13 @@ Command-line interface for generating reports and analyzing metrics.
 
 Usage:
     # Generate reports from test results
-    sleuth report generate
+    squirt report generate
 
     # View metric trends
-    sleuth report trends --metric accuracy --last 30
+    squirt report trends --metric accuracy --last 30
 
     # Compare against baseline
-    sleuth report compare --baseline main --current HEAD
+    squirt report compare --baseline main --current HEAD
 """
 
 from __future__ import annotations
@@ -396,7 +396,7 @@ def cmd_pr_comment(args: argparse.Namespace) -> int:
 def main(argv: Optional[List[str]] = None) -> int:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
-        prog="sleuth",
+        prog="squirt",
         description="Squirt - Metrics collection and analysis",
     )
     parser.add_argument(

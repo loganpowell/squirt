@@ -43,9 +43,9 @@ echo
 
 # Content checks
 info "Checking file content..."
-check "pyproject.toml has name='sleuth'" "grep -q 'name = \"sleuth\"' pyproject.toml"
+check "pyproject.toml has name='squirt'" "grep -q 'name = \"squirt\"' pyproject.toml"
 check "pyproject.toml has version" "grep -q '^version = ' pyproject.toml"
-check "README.md mentions installation" "grep -q 'pip install sleuth' README.md"
+check "README.md mentions installation" "grep -q 'pip install squirt' README.md"
 check "CHANGELOG.md has Unreleased section" "grep -q '\[Unreleased\]' CHANGELOG.md"
 echo
 
@@ -65,10 +65,10 @@ echo
 
 # Import checks
 info "Checking package imports..."
-check "sleuth imports successfully" "python -c 'import sleuth' 2>/dev/null"
-check "sleuth.m imports" "python -c 'from sleuth import m' 2>/dev/null"
-check "sleuth.track imports" "python -c 'from sleuth import track' 2>/dev/null"
-check "sleuth.configure imports" "python -c 'from sleuth import configure' 2>/dev/null"
+check "squirt imports successfully" "python -c 'import squirt' 2>/dev/null"
+check "squirt.m imports" "python -c 'from squirt import m' 2>/dev/null"
+check "squirt.track imports" "python -c 'from squirt import track' 2>/dev/null"
+check "squirt.configure imports" "python -c 'from squirt import configure' 2>/dev/null"
 echo
 
 # Test checks

@@ -1,6 +1,6 @@
 # Instrumentation Guide
 
-Learn how to instrument your code with sleuth's `@track` decorator and expectations system.
+Learn how to instrument your code with squirt's `@track` decorator and expectations system.
 
 ## The @track Decorator
 
@@ -57,7 +57,7 @@ The expectations system allows you to compare function outputs against expected 
 }
 ```
 
-2. Configure sleuth to use it:
+2. Configure squirt to use it:
 
 ```python
 from squirt import configure
@@ -87,7 +87,7 @@ def extract_bullets(description: str) -> dict:
 
 ### How Expects Works
 
-1. When the function is called, sleuth looks up the input in expectations
+1. When the function is called, squirt looks up the input in expectations
 2. After execution, it compares the output against the expected result
 3. Special keys are injected into the result:
    - `__expected_match__`: Boolean indicating exact match
@@ -172,8 +172,8 @@ import pytest
 from squirt import set_test_context, get_test_context
 
 @pytest.fixture(autouse=True)
-def sleuth_context(request):
-    """Set sleuth test context for each test."""
+def squirt_context(request):
+    """Set squirt test context for each test."""
     set_test_context(
         test_name=request.node.name,
         test_file=request.fspath.basename,

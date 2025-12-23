@@ -343,7 +343,7 @@ class TestTrackDecorator:
         result = test_function()
         assert result is not None
 
-        # Failing metric should be 0 (sleuth v2 default), passing should be recorded
+        # Failing metric should be 0 (squirt v2 default), passing should be recorded
         client = get_metrics_client()
         results = client.get_results("test_function")
         assert results["test_function"][0].metrics["failing"] == 0

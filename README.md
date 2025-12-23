@@ -19,10 +19,10 @@ Squirt provides a unified framework for instrumenting code, collecting metrics, 
 
 ```bash
 # With pip
-pip install sleuth
+pip install squirt
 
 # With uv
-uv pip install sleuth
+uv pip install squirt
 
 # From source
 pip install git+https://github.com/loganpowell/squirt.git
@@ -63,7 +63,7 @@ Squirt provides a zero-config pytest plugin that handles everything automaticall
 
 ```python
 # conftest.py
-pytest_plugins = ["sleuth.pytest"]
+pytest_plugins = ["squirt.pytest"]
 ```
 
 That's it! The plugin auto-discovers:
@@ -77,9 +77,9 @@ That's it! The plugin auto-discovers:
 
 ```python
 # conftest.py
-from squirt.pytest import configure_sleuth
+from squirt.pytest import configure_squirt
 
-configure_sleuth(
+configure_squirt(
     results_dir="custom/results",
     history_dir="custom/history",
     default_source="custom/expectations.json",
@@ -87,7 +87,7 @@ configure_sleuth(
     verbose=True,          # Print configuration info
 )
 
-pytest_plugins = ["sleuth.pytest"]
+pytest_plugins = ["squirt.pytest"]
 ```
 
 ### CLI Options
@@ -97,7 +97,7 @@ pytest_plugins = ["sleuth.pytest"]
 pytest tests/
 
 # Custom expectations file
-pytest --sleuth-expectations tests/data/custom.json tests/
+pytest --squirt-expectations tests/data/custom.json tests/
 
 # Disable metrics collection
 pytest --no-metrics tests/
@@ -227,19 +227,19 @@ configure(
 
 ```bash
 # Generate full report
-sleuth report full --output report.md --save-history
+squirt report full --output report.md --save-history
 
 # Generate PR comment
-sleuth report pr --output pr-comment.md
+squirt report pr --output pr-comment.md
 
 # View trends
-sleuth report trends --metric accuracy --last 10
+squirt report trends --metric accuracy --last 10
 
 # Generate insights
-sleuth report insights
+squirt report insights
 
 # Check for regressions
-sleuth report check-regression
+squirt report check-regression
 ```
 
 ## Documentation
@@ -255,7 +255,7 @@ sleuth report check-regression
 ## Architecture
 
 ```
-sleuth/
+squirt/
 ├── core/           # Core types, decorators, and base classes
 ├── categories/     # Metric categories (quality, performance, cost)
 ├── builtins.py     # Pre-configured metrics (m.runtime_ms, m.accuracy, etc.)
@@ -311,11 +311,11 @@ Squirt organizes metrics into categories for proper aggregation:
 ## Testing
 
 ```bash
-# Run sleuth tests
+# Run squirt tests
 pytest tests/ -v
 
 # Run with coverage
-pytest tests/ --cov=sleuth --cov-report=html
+pytest tests/ --cov=squirt --cov-report=html
 ```
 
 ## Contributing

@@ -3,7 +3,7 @@
 ## Project Structure
 
 ```
-sleuth/
+squirt/
 ├── __init__.py           # Main exports
 ├── cli.py                # CLI interface
 ├── metrics.py            # Built-in metrics
@@ -80,7 +80,7 @@ make verify && make release-patch
 pytest
 
 # Run with coverage
-pytest --cov=sleuth --cov-report=html
+pytest --cov=squirt --cov-report=html
 
 # Run specific test file
 pytest tests/test_metrics_unit.py -v
@@ -119,7 +119,7 @@ ruff format .
 ruff check . --fix
 
 # Type checking
-mypy sleuth
+mypy squirt
 ```
 
 ## Publishing Checklist

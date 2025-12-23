@@ -6,7 +6,7 @@ Uses a unified base class pattern for both built-in and custom metrics.
 Usage:
     from squirt import m, track, configure
 
-    # Configure sleuth (optional)
+    # Configure squirt (optional)
     configure(
         results_dir="./tests/results",
         expectations_file="./tests/data/expectations.json",
@@ -59,7 +59,7 @@ __version__ = "0.1.0"
 
 # Global configuration
 _config: contextvars.ContextVar[dict] = contextvars.ContextVar(
-    "sleuth_config",
+    "squirt_config",
     default={
         "results_dir": "./tests/results",
         "history_dir": "./tests/history",
@@ -74,7 +74,7 @@ def configure(
     expectations_file: Optional[Union[str, Path]] = None,
 ) -> None:
     """
-    Configure sleuth settings.
+    Configure squirt settings.
 
     Args:
         results_dir: Directory to store metric results
@@ -107,13 +107,13 @@ def configure(
 
 
 def get_config() -> dict:
-    """Get current sleuth configuration."""
+    """Get current squirt configuration."""
     return _config.get().copy()
 
 
 # Global metrics client instance
 _metrics_client: contextvars.ContextVar[Optional["MetricsClient"]] = (
-    contextvars.ContextVar("sleuth_metrics_client", default=None)
+    contextvars.ContextVar("squirt_metrics_client", default=None)
 )
 
 

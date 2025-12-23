@@ -1,5 +1,5 @@
 """
 Squirt Tests
 
-Unit tests for the sleuth metrics library.
+Unit tests for the squirt metrics library.
 """

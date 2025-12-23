@@ -58,7 +58,7 @@ Edit `pyproject.toml`:
 
 ```toml
 [project]
-name = "sleuth"
+name = "squirt"
 version = "0.2.0"  # Update this
 ```
 
@@ -159,8 +159,8 @@ Before running `./release.sh`:
 
 After successful release:
 
-1. Verify on PyPI: https://pypi.org/project/sleuth/
-2. Test installation: `pip install sleuth==<version>`
+1. Verify on PyPI: https://pypi.org/project/squirt/
+2. Test installation: `pip install squirt==<version>`
 3. Create GitHub release with notes from CHANGELOG
 4. Announce on relevant channels
 
@@ -216,5 +216,5 @@ If a bad release goes out:
 
 ```bash
 # Yank via PyPI web interface
-# Go to: https://pypi.org/manage/project/sleuth/releases/
+# Go to: https://pypi.org/manage/project/squirt/releases/
 ```

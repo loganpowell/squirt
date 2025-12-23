@@ -68,12 +68,12 @@ run_cmd() {
     fi
 }
 
-# Check if running from sleuth directory
+# Check if running from squirt directory
 if [[ ! -f "$PYPROJECT" ]]; then
-    error "Must run from sleuth directory (where pyproject.toml is located)"
+    error "Must run from squirt directory (where pyproject.toml is located)"
 fi
 
-info "Starting release process for sleuth..."
+info "Starting release process for squirt..."
 
 # 1. Check git status
 info "Checking git repository status..."

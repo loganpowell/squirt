@@ -189,7 +189,7 @@ confidence = ConfidenceMetric()
 For domain-specific metrics, use the contrib system:
 
 ```python
-# sleuth/contrib/tax.py
+# squirt/contrib/tax.py
 from squirt.core.types import Metric, AggregationType
 
 class TaxMetrics:

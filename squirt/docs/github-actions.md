@@ -45,7 +45,7 @@ jobs:
       - name: Generate Report
         run: |
           cd backend
-          poetry run sleuth report full --save-history --output ../report.md
+          poetry run squirt report full --save-history --output ../report.md
 
       - name: Add to Job Summary
         run: cat report.md >> $GITHUB_STEP_SUMMARY
@@ -54,7 +54,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           cd backend
-          poetry run sleuth report pr --output ../pr-comment.md
+          poetry run squirt report pr --output ../pr-comment.md
 
       - name: Post PR Comment
         if: github.event_name == 'pull_request'
@@ -127,7 +127,7 @@ jobs:
       - name: Check if backend exists
         id: check_backend
         run: |
-          if [ -d "backend/sleuth" ]; then
+          if [ -d "backend/squirt" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -163,14 +163,14 @@ jobs:
         if: steps.check_backend.outputs.exists == 'true'
         run: |
           cd backend
-          uv run sleuth --results-dir tests/results --history-dir tests/history \
+          uv run squirt --results-dir tests/results --history-dir tests/history \
             report full --save-history --output ../metrics-report.md
 
       - name: Generate PR Comment
         if: steps.check_backend.outputs.exists == 'true' && github.event_name == 'pull_request'
         run: |
           cd backend
-          uv run sleuth --results-dir tests/results --history-dir tests/history \
+          uv run squirt --results-dir tests/results --history-dir tests/history \
             report pr --output ../pr-comment.md
 
       - name: Upload Full Report
@@ -241,7 +241,7 @@ Ensure your project has this structure:
 
 ```
 backend/
-├── sleuth/              # Squirt library
+├── squirt/              # Squirt library
 ├── tests/
 │   ├── integration/     # Integration tests (run by CI)
 │   ├── results/         # Test results (generated)
@@ -260,8 +260,8 @@ Squirt respects these environment variables:
 
 | Variable              | Description             | Default           |
 | --------------------- | ----------------------- | ----------------- |
-| `SLEUTH_RESULTS_DIR`  | Results directory       | `./tests/results` |
-| `SLEUTH_HISTORY_DIR`  | History directory       | `./tests/history` |
+| `SQUIRT_RESULTS_DIR`  | Results directory       | `./tests/results` |
+| `SQUIRT_HISTORY_DIR`  | History directory       | `./tests/history` |
 | `GITHUB_STEP_SUMMARY` | GitHub job summary file | (set by GitHub)   |
 
 ## Secrets
@@ -400,7 +400,7 @@ on:
 
 - name: Generate Report
   if: always() # Run even if tests fail
-  run: poetry run sleuth report full --output report.md
+  run: poetry run squirt report full --output report.md
 ```
 
 ### Report Failures in Comment
@@ -440,7 +440,7 @@ on:
 ### 1. Always Save History
 
 ```yaml
-- run: sleuth report full --save-history
+- run: squirt report full --save-history
 ```
 
 ### 2. Archive History Long-Term

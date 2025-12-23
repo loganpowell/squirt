@@ -87,7 +87,7 @@ data.node_count.assert_passes(transform, threshold=5)  # Fail CI if < 5
 ### 5. Automated Gates
 
 ```bash
-sleuth report check-regression --threshold 5.0
+squirt report check-regression --threshold 5.0
 # Fails CI if accuracy drops >5%
 # Accounts for normal LLM variance
 ```

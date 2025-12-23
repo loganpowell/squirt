@@ -4,7 +4,7 @@ Complete API documentation for the Squirt library.
 
 ## Core Module
 
-### sleuth
+### squirt
 
 Main entry point for the library.
 
@@ -46,7 +46,7 @@ def configure(
 ) -> None
 ```
 
-Configure global sleuth settings.
+Configure global squirt settings.
 
 **Parameters:**
 
@@ -74,7 +74,7 @@ configure(
 def get_config() -> dict
 ```
 
-Get current sleuth configuration.
+Get current squirt configuration.
 
 **Returns:** Dictionary with current configuration
 
@@ -387,7 +387,7 @@ Get all recorded results.
 
 ## Reporting
 
-### sleuth.reporting
+### squirt.reporting
 
 ```python
 from squirt.reporting import (
@@ -586,7 +586,7 @@ Find components using more than threshold of total resources.
 
 ## Analysis
 
-### sleuth.analysis
+### squirt.analysis
 
 ```python
 from squirt.analysis import (
@@ -624,10 +624,10 @@ Component dependency graph.
 
 ## CLI
 
-### sleuth
+### squirt
 
 ```bash
-sleuth [OPTIONS] COMMAND [ARGS]
+squirt [OPTIONS] COMMAND [ARGS]
 
 Options:
   --results-dir PATH    Directory for metric results
@@ -638,10 +638,10 @@ Commands:
   report                Report commands
 ```
 
-### sleuth report
+### squirt report
 
 ```bash
-sleuth report SUBCOMMAND [OPTIONS]
+squirt report SUBCOMMAND [OPTIONS]
 
 Subcommands:
   full      Generate full markdown report
@@ -652,29 +652,29 @@ Subcommands:
   generate  Generate basic report
 ```
 
-### sleuth report full
+### squirt report full
 
 ```bash
-sleuth report full [OPTIONS]
+squirt report full [OPTIONS]
 
 Options:
   --output, -o FILE     Output file path
   --save-history        Save snapshot to history
 ```
 
-### sleuth report pr
+### squirt report pr
 
 ```bash
-sleuth report pr [OPTIONS]
+squirt report pr [OPTIONS]
 
 Options:
   --output, -o FILE     Output file path
 ```
 
-### sleuth report trends
+### squirt report trends
 
 ```bash
-sleuth report trends [OPTIONS]
+squirt report trends [OPTIONS]
 
 Options:
   --metric, -m NAME     Metric name (required)
@@ -685,7 +685,7 @@ Options:
 
 ## Contrib
 
-### sleuth.contrib.tax
+### squirt.contrib.tax
 
 Domain-specific metrics for tax processing.
 
@@ -719,7 +719,7 @@ COST_INCREASE = 0.25         # 25% increase triggers warning
 
 ```python
 class SquirtError(Exception):
-    """Base exception for sleuth errors."""
+    """Base exception for squirt errors."""
     pass
 
 class MetricExtractionError(SquirtError):

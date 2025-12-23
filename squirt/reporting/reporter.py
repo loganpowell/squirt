@@ -445,7 +445,7 @@ class MetricsReporter:
         history: List[Dict[str, Any]],
         hierarchical: Optional[List[Dict[str, Any]]],
     ) -> str:
-        """Generate actionable insights section using sleuth's InsightGenerator."""
+        """Generate actionable insights section using squirt's InsightGenerator."""
         try:
             # Convert heartbeat dict to SystemHeartbeat
             system_heartbeat = SystemHeartbeat(

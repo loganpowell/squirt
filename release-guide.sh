@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Quick reference for releasing sleuth
+# Quick reference for releasing squirt
 
 cat << 'EOF'
 ╔═══════════════════════════════════════════════════════════════╗

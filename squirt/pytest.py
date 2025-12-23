@@ -3,19 +3,19 @@ Squirt Pytest Plugin
 
 Zero-config metrics collection for pytest. Just add to conftest.py:
 
-    pytest_plugins = ["sleuth.pytest"]
+    pytest_plugins = ["squirt.pytest"]
 
 Or with custom paths:
 
-    from squirt.pytest import configure_sleuth
+    from squirt.pytest import configure_squirt
 
-    configure_sleuth(
+    configure_squirt(
         results_dir="tests/results",
         default_source="tests/data/expectations.json",
     )
 
 The plugin automatically:
-- Configures sleuth directories
+- Configures squirt directories
 - Loads default source from standard locations (overridden by @track(source=...))
 - Tracks component execution
 - Generates heartbeat reports on session finish
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 # Module-level Configuration
 # =============================================================================
 
-_sleuth_config: Dict[str, Any] = {
+_squirt_config: Dict[str, Any] = {
     "results_dir": None,
     "history_dir": None,
     "default_source": None,
@@ -59,7 +59,7 @@ def get_dependency_graph() -> Optional[Any]:
     return _dependency_graph
 
 
-def configure_sleuth(
+def configure_squirt(
     results_dir: Optional[Union[str, Path]] = None,
     history_dir: Optional[Union[str, Path]] = None,
     default_source: Optional[Union[str, Path]] = None,
@@ -68,7 +68,7 @@ def configure_sleuth(
     verbose: bool = True,
 ) -> None:
     """
-    Configure sleuth for your test suite. Call this in conftest.py.
+    Configure squirt for your test suite. Call this in conftest.py.
 
     All paths are relative to the tests directory by default.
 
@@ -83,27 +83,27 @@ def configure_sleuth(
 
     Example:
         # conftest.py
-        from squirt.pytest import configure_sleuth
+        from squirt.pytest import configure_squirt
 
-        configure_sleuth(
+        configure_squirt(
             default_source="tests/data/expectations.json",
         )
 
-        pytest_plugins = ["sleuth.pytest"]
+        pytest_plugins = ["squirt.pytest"]
     """
-    global _sleuth_config
+    global _squirt_config
 
     if results_dir:
-        _sleuth_config["results_dir"] = str(results_dir)
+        _squirt_config["results_dir"] = str(results_dir)
     if history_dir:
-        _sleuth_config["history_dir"] = str(history_dir)
+        _squirt_config["history_dir"] = str(history_dir)
     if default_source:
-        _sleuth_config["default_source"] = str(default_source)
+        _squirt_config["default_source"] = str(default_source)
     if instrumented_dir:
-        _sleuth_config["instrumented_dir"] = str(instrumented_dir)
+        _squirt_config["instrumented_dir"] = str(instrumented_dir)
 
-    _sleuth_config["auto_heartbeat"] = auto_heartbeat
-    _sleuth_config["verbose"] = verbose
+    _squirt_config["auto_heartbeat"] = auto_heartbeat
+    _squirt_config["verbose"] = verbose
 
 
 # =============================================================================
@@ -121,8 +121,8 @@ _executed_components: set = set()
 
 
 def pytest_addoption(parser: "Parser") -> None:
-    """Add sleuth command-line options."""
-    group = parser.getgroup("sleuth", "Squirt metrics collection")
+    """Add squirt command-line options."""
+    group = parser.getgroup("squirt", "Squirt metrics collection")
     group.addoption(
         "--collect-metrics",
         action="store_true",
@@ -142,7 +142,7 @@ def pytest_addoption(parser: "Parser") -> None:
         help="Directory for metrics output",
     )
     group.addoption(
-        "--sleuth-expectations",
+        "--squirt-expectations",
         action="store",
         default=None,
         help="Path to expectations.json file",
@@ -150,7 +150,7 @@ def pytest_addoption(parser: "Parser") -> None:
 
 
 def pytest_configure(config: "Config") -> None:
-    """Configure sleuth based on pytest options and module config."""
+    """Configure squirt based on pytest options and module config."""
     # Skip if metrics disabled
     if config.getoption("--no-metrics", default=False):
         return
@@ -172,7 +172,7 @@ def pytest_configure(config: "Config") -> None:
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
-    """Initialize sleuth at session start."""
+    """Initialize squirt at session start."""
     global _session_start_time
     _session_start_time = time.time()
 
@@ -188,11 +188,11 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     # Get results dir from CLI > module config > default
     results_dir = (
         session.config.getoption("--metrics-dir")
-        or _sleuth_config.get("results_dir")
+        or _squirt_config.get("results_dir")
         or (tests_dir / "results" if tests_dir else None)
     )
 
-    history_dir = _sleuth_config.get("history_dir") or (
+    history_dir = _squirt_config.get("history_dir") or (
         tests_dir / "history" if tests_dir else None
     )
 
@@ -200,7 +200,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     if results_dir and Path(results_dir).exists():
         _cleanup_old_results(Path(results_dir))
 
-    # Configure sleuth core AND initialize MetricsClient
+    # Configure squirt core AND initialize MetricsClient
     configure(
         results_dir=str(results_dir) if results_dir else None,
         history_dir=str(history_dir) if history_dir else None,
@@ -219,11 +219,11 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
     if expectations_path and expectations_path.exists():
         configure_expectations(path=expectations_path)
-        if _sleuth_config.get("verbose", True):
+        if _squirt_config.get("verbose", True):
             print(f"\n📊 Squirt configured")
             print(f"   Results: {results_dir}")
             print(f"   Expectations: {expectations_path}")
-    elif _sleuth_config.get("verbose", True):
+    elif _squirt_config.get("verbose", True):
         print(f"\n📊 Squirt configured (no expectations file)")
         print(f"   Results: {results_dir}")
 
@@ -454,7 +454,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     # Skip if metrics disabled or auto_heartbeat off
     if session.config.getoption("--no-metrics", default=False):
         return
-    if not _sleuth_config.get("auto_heartbeat", True):
+    if not _squirt_config.get("auto_heartbeat", True):
         return
 
     from . import DependencyGraphBuilder, generate_heartbeat_from_graph
@@ -463,10 +463,10 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     if not tests_dir:
         return
 
-    results_dir_str = _sleuth_config.get("results_dir")
+    results_dir_str = _squirt_config.get("results_dir")
     results_dir = Path(results_dir_str) if results_dir_str else tests_dir / "results"
 
-    instrumented_dir_str = _sleuth_config.get("instrumented_dir")
+    instrumented_dir_str = _squirt_config.get("instrumented_dir")
     instrumented_dir = (
         Path(instrumented_dir_str)
         if instrumented_dir_str
@@ -486,7 +486,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
         roots_executed = _executed_components & root_components
 
         if not roots_executed:
-            if _sleuth_config.get("verbose", True):
+            if _squirt_config.get("verbose", True):
                 print(f"\n📊 No root components ran - skipping heartbeat")
             return
 
@@ -515,7 +515,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
                 include_components=components_with_results,
             )
 
-            if _sleuth_config.get("verbose", True):
+            if _squirt_config.get("verbose", True):
                 print("\n📊 System Heartbeat:")
 
                 # Print system-level metrics first (high-level health)
@@ -539,7 +539,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
                             print(f"     {name}: {value}")
 
     except Exception as e:
-        if _sleuth_config.get("verbose", True):
+        if _squirt_config.get("verbose", True):
             print(f"\n⚠️  Heartbeat generation error: {e}")
 
 
@@ -550,7 +550,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
 
 @pytest.fixture(scope="session")
 def metrics_client():
-    """Get the sleuth MetricsClient for the session."""
+    """Get the squirt MetricsClient for the session."""
     from . import get_metrics_client
 
     return get_metrics_client()
@@ -573,7 +573,7 @@ def dependency_graph(request):
     if not tests_dir:
         pytest.skip("Could not find tests directory")
 
-    instrumented_dir_str = _sleuth_config.get("instrumented_dir")
+    instrumented_dir_str = _squirt_config.get("instrumented_dir")
     instrumented_dir = (
         Path(instrumented_dir_str)
         if instrumented_dir_str
@@ -638,7 +638,7 @@ def _cleanup_old_results(results_dir: Path) -> None:
                 report_path.unlink()
     except Exception as e:
         # Don't fail the test run if cleanup fails
-        if _sleuth_config.get("verbose", True):
+        if _squirt_config.get("verbose", True):
             print(f"\n⚠️  Warning: Failed to clean up old results: {e}")
 
 
@@ -647,13 +647,13 @@ def _resolve_expectations_path(
 ) -> Optional[Path]:
     """Resolve default source file path from various sources."""
     # 1. CLI option (legacy support)
-    cli_path = config.getoption("--sleuth-expectations", default=None)
+    cli_path = config.getoption("--squirt-expectations", default=None)
     if cli_path:
         return Path(cli_path)
 
     # 2. Module config (default_source)
-    if _sleuth_config.get("default_source"):
-        return Path(_sleuth_config["default_source"])
+    if _squirt_config.get("default_source"):
+        return Path(_squirt_config["default_source"])
 
     # 3. Default locations
     if tests_dir:
@@ -692,7 +692,7 @@ def clear_session_results() -> None:
 
 
 __all__ = [
-    "configure_sleuth",
+    "configure_squirt",
     "add_result",
     "get_session_results",
     "clear_session_results",

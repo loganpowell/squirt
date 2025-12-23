@@ -9,7 +9,7 @@ Squirt provides comprehensive reporting capabilities for metrics visualization a
 Detailed markdown report suitable for GitHub job summaries:
 
 ```bash
-sleuth report full --save-history --output report.md
+squirt report full --save-history --output report.md
 ```
 
 **Includes:**
@@ -27,7 +27,7 @@ sleuth report full --save-history --output report.md
 Concise format optimized for pull request comments:
 
 ```bash
-sleuth report pr --output pr-comment.md
+squirt report pr --output pr-comment.md
 ```
 
 **Includes:**
@@ -43,48 +43,48 @@ sleuth report pr --output pr-comment.md
 
 ```bash
 # Generate full report to stdout
-sleuth report full
+squirt report full
 
 # Save to file
-sleuth report full --output ./reports/metrics.md
+squirt report full --output ./reports/metrics.md
 
 # Save historical snapshot
-sleuth report full --save-history
+squirt report full --save-history
 
 # Specify custom directories
-sleuth --results-dir ./my-results --history-dir ./my-history report full
+squirt --results-dir ./my-results --history-dir ./my-history report full
 ```
 
 ### Available Commands
 
 | Command                  | Description                |
 | ------------------------ | -------------------------- |
-| `sleuth report full`     | Generate detailed report   |
-| `sleuth report pr`       | Generate PR comment format |
-| `sleuth report trends`   | Show metric trends         |
-| `sleuth report compare`  | Compare between runs       |
-| `sleuth report insights` | Generate insights only     |
-| `sleuth report generate` | Generate basic report      |
+| `squirt report full`     | Generate detailed report   |
+| `squirt report pr`       | Generate PR comment format |
+| `squirt report trends`   | Show metric trends         |
+| `squirt report compare`  | Compare between runs       |
+| `squirt report insights` | Generate insights only     |
+| `squirt report generate` | Generate basic report      |
 
 ### Command Options
 
 ```bash
 # Full report options
-sleuth report full [OPTIONS]
+squirt report full [OPTIONS]
   --output, -o FILE     Output file path
   --save-history        Save snapshot to history
 
 # PR comment options
-sleuth report pr [OPTIONS]
+squirt report pr [OPTIONS]
   --output, -o FILE     Output file path
 
 # Trends options
-sleuth report trends [OPTIONS]
+squirt report trends [OPTIONS]
   --metric, -m NAME     Metric name to track (required)
   --last, -n COUNT      Number of runs to show (default: 10)
 
 # Compare options
-sleuth report compare [OPTIONS]
+squirt report compare [OPTIONS]
   --baseline, -b REF    Baseline commit/branch
   --current, -c REF     Current commit/branch
 ```
@@ -290,7 +290,7 @@ pipeline (2.5s, 95.0%)
 
 ```bash
 # Via CLI
-sleuth report full --save-history
+squirt report full --save-history
 
 # Via Python
 reporter.save_historical_snapshot()
@@ -366,7 +366,7 @@ maximum = aggregate_values(values, AggregationType.MAX)  # 0.95
 # GitHub Actions
 - name: Generate Report
   run: |
-    sleuth report full --save-history --output report.md
+    squirt report full --save-history --output report.md
 ```
 
 ### 2. Use PR Comments for Visibility
@@ -375,7 +375,7 @@ maximum = aggregate_values(values, AggregationType.MAX)  # 0.95
 - name: Generate PR Comment
   if: github.event_name == 'pull_request'
   run: |
-    sleuth report pr --output pr-comment.md
+    squirt report pr --output pr-comment.md
 ```
 
 ### 3. Archive Historical Data
