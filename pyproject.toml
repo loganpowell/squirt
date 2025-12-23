@@ -47,7 +47,7 @@ all = [
 ]
 
 [project.scripts]
-sleuth = "sleuth.cli:main"
+sleuth = "squirt.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/loganpowell/sleuth"
@@ -60,7 +60,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["."]
+packages = ["squirt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
