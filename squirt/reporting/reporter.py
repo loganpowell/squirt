@@ -416,7 +416,7 @@ class MetricsReporter:
         if heartbeat:
             sections.append(self._section_insights(heartbeat, history, hierarchical))
             sections.append(self._section_executive_summary(heartbeat, history))
-            sections.append(self._section_performance_trends(history))
+            sections.append(self._section_performance_trends(history, heartbeat))
         else:
             sections.append(
                 "## ⚠️ Partial Report\n\nTests failed or did not complete. Showing available component data only."
@@ -644,9 +644,11 @@ class MetricsReporter:
 
         return "\n".join(lines)
 
-    def _section_performance_trends(self, history: List[Dict[str, Any]]) -> str:
+    def _section_performance_trends(
+        self, history: List[Dict[str, Any]], heartbeat: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Generate performance trends section with sparklines."""
-        if len(history) < 2:
+        if len(history) < 1:
             return "\n".join(
                 [
                     "## Performance Trends",
@@ -664,7 +666,11 @@ class MetricsReporter:
         metric_names: Set[str] = set()
         has_system_metrics = any(entry.get("system_metrics") for entry in history)
 
-        if has_system_metrics:
+        # Get current metrics from heartbeat if available
+        current_system_metrics = heartbeat.get("system_metrics", {}) if heartbeat else {}
+        metric_names.update(current_system_metrics.keys())
+
+        if has_system_metrics or current_system_metrics:
             # Use system metrics
             for entry in history:
                 metric_names.update(entry.get("system_metrics", {}).keys())
@@ -683,14 +689,21 @@ class MetricsReporter:
                 ]
                 values = [v for v in values if v is not None]
 
-                if values:
-                    sparkline = self._create_sparkline(values)
+                # Use current run's value from heartbeat, or fall back to last historical
+                current = current_system_metrics.get(metric_name)
+                if current is None and values:
                     current = values[-1]
+
+                if current is not None and values:  # Need both for display
+                    sparkline = self._create_sparkline(values)
                     current_fmt = self._format_system_metric(metric_name, current)
                     lines.append(f"| {metric_name} | {sparkline} | {current_fmt} |")
 
         else:
             # Fall back to component metrics
+            current_component_metrics = heartbeat.get("metrics", {}) if heartbeat else {}
+            metric_names.update(current_component_metrics.keys())
+
             for entry in history:
                 metric_names.update(entry.get("metrics", {}).keys())
 
@@ -708,9 +721,13 @@ class MetricsReporter:
                 ]
                 values = [v for v in values if v is not None]
 
-                if values:
-                    sparkline = self._create_sparkline(values)
+                # Use current run's value from heartbeat, or fall back to last historical
+                current = current_component_metrics.get(metric_name)
+                if current is None and values:
                     current = values[-1]
+
+                if current is not None and values:  # Need both for display
+                    sparkline = self._create_sparkline(values)
 
                     if "runtime" in metric_name.lower() or "ms" in metric_name.lower():
                         current_fmt = self._format_duration(current)
