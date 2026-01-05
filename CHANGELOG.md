@@ -7,24 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+## [0.1.5] - 2026-01-05
 
-- Initial public release
-- Core `@track` decorator for instrumentation
-- Auto-injection of runtime_ms, memory_mb, cpu_percent metrics
-- Built-in metrics: runtime_ms, memory_mb, error_free, structure_valid, expected_match
-- MetricBuilder with auto-derivation of aggregation types from system metrics
-- Two-tier metrics system (component-level → system-level)
-- Pytest plugin with zero-config integration
-- CLI tool for report generation
-- Historical tracking and sparkline trends
-- GitHub Actions integration
-- Contrib plugins: vector, llm, chunk, data
-- Comprehensive documentation and examples
+### Fixed
 
-### Changed
-
-- None (initial release)
+- Performance Trends table now correctly shows current run's metrics in the "Current" column instead of previous run's values
+- Modified `_section_performance_trends()` to accept and use current heartbeat data
+- Reduced minimum history requirement from 2 to 1 runs (current values come from heartbeat)
 
 ### Deprecated
 
