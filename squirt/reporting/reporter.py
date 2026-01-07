@@ -695,13 +695,12 @@ class MetricsReporter:
                 ]
                 values = [v for v in values if v is not None]
 
-                if values:
+                # Get current value from heartbeat, not from history
+                current = current_system_metrics.get(metric_name)
+
+                if values and current is not None:
                     # Use last 10 values for consistent sparkline length
                     values = values[-10:]
-                    sparkline = self._create_sparkline(values)
-                    current = values[-1]
-
-                if current is not None and values:  # Need both for display
                     sparkline = self._create_sparkline(values)
                     current_fmt = self._format_system_metric(metric_name, current)
                     lines.append(f"| {metric_name} | {sparkline} | {current_fmt} |")
@@ -730,13 +729,12 @@ class MetricsReporter:
                 ]
                 values = [v for v in values if v is not None]
 
-                if values:
+                # Get current value from heartbeat, not from history
+                current = current_component_metrics.get(metric_name)
+
+                if values and current is not None:
                     # Use last 10 values for consistent sparkline length
                     values = values[-10:]
-                    sparkline = self._create_sparkline(values)
-                    current = values[-1]
-
-                if current is not None and values:  # Need both for display
                     sparkline = self._create_sparkline(values)
 
                     if "runtime" in metric_name.lower() or "ms" in metric_name.lower():
