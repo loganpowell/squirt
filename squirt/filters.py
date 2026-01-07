@@ -27,17 +27,18 @@ Manual Filtering:
         ...
 """
 
-import contextvars
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, Optional
 
 from .core.types import Metric
 from .plugins.base import MetricNamespace
 
-# Runtime namespace filter configuration
-_namespace_filters: contextvars.ContextVar[dict] = contextvars.ContextVar(
-    "namespace_filters",
-    default={"skip": None, "only": None},
-)
+# Runtime namespace filter configuration (global, not contextvar)
+# This is session-wide configuration that should persist across all tests
+_namespace_filters: dict[str, list[str] | None] = {
+    "skip": None,
+    "only": None,
+}
 
 
 def configure_namespace_filters(
@@ -60,15 +61,17 @@ def configure_namespace_filters(
         # Skip expensive metrics in CI
         configure_namespace_filters(skip=['llm', 'vector'])
     """
-    _namespace_filters.set({"skip": skip, "only": only})
+    global _namespace_filters
+    _namespace_filters["skip"] = skip
+    _namespace_filters["only"] = only
 
 
 def get_namespace_filters() -> dict:
     """Get currently configured namespace filters."""
-    return _namespace_filters.get()
+    return _namespace_filters.copy()
 
 
-def apply_runtime_filters(metrics: list[Metric]) -> list[Metric]:
+def apply_runtime_filters(metrics: Sequence[Metric | Any]) -> list[Metric]:
     """
     Apply runtime namespace filters to a list of metrics.
 
@@ -80,12 +83,13 @@ def apply_runtime_filters(metrics: list[Metric]) -> list[Metric]:
     Returns:
         Filtered list based on runtime configuration
     """
-    filters = _namespace_filters.get()
-    skip_names = filters.get("skip")
-    only_names = filters.get("only")
+    skip_names = _namespace_filters.get("skip")
+    only_names = _namespace_filters.get("only")
+
+    metrics_list = list(metrics)
 
     if not skip_names and not only_names:
-        return metrics
+        return metrics_list
 
     # Helper to check if a namespace matches a name filter
     def matches_name(namespace: Any, name: str) -> bool:
@@ -123,7 +127,7 @@ def apply_runtime_filters(metrics: list[Metric]) -> list[Metric]:
     if only_names:
         return [
             m
-            for m in metrics
+            for m in metrics_list
             if any(
                 matches_name(getattr(m, "_namespace", None), name)
                 for name in only_names
@@ -139,7 +143,7 @@ def apply_runtime_filters(metrics: list[Metric]) -> list[Metric]:
             )
         ]
 
-    return metrics
+    return metrics_list
 
 
 def skip_namespaces(
@@ -225,7 +229,7 @@ def only_namespaces(
 def when_env(
     var: str,
     value: str = "true",
-    metrics: list[Metric] = None,
+    metrics: Optional[list[Metric]] = None,
 ) -> list[Metric]:
     """
     Conditionally include metrics based on environment variable.
