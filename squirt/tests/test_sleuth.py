@@ -167,15 +167,15 @@ class TestContribPlugins:
         """Test data plugin metrics."""
         assert isinstance(data.field_count, MetricBuilder)
         assert isinstance(data.nesting_depth, MetricBuilder)
-        assert isinstance(data.structure_valid, MetricBuilder)
+        assert isinstance(data.node_count, MetricBuilder)
 
-        metric = data.field_accuracy.from_output("accuracy")
-        assert metric.name == "field_accuracy"
+        metric = data.field_count.from_output("count")
+        assert metric.name == "field_count"
 
     def test_vector_metrics(self):
         """Test vector plugin metrics."""
         assert isinstance(vector.top_similarity, MetricBuilder)
-        assert isinstance(vector.hit_rate, MetricBuilder)
+        assert isinstance(vector.avg_similarity, MetricBuilder)
         assert isinstance(vector.embedding_dimension, MetricBuilder)
 
         metric = vector.top_similarity.from_output("similarity")
@@ -185,7 +185,7 @@ class TestContribPlugins:
         """Test chunk plugin metrics."""
         assert isinstance(chunk.count, MetricBuilder)
         assert isinstance(chunk.avg_size, MetricBuilder)
-        assert isinstance(chunk.max_size, MetricBuilder)
+        assert isinstance(chunk.total_size, MetricBuilder)
 
         metric = chunk.count.from_output("chunks")
         assert metric.name == "chunk_count"
@@ -194,7 +194,7 @@ class TestContribPlugins:
         """Test LLM plugin metrics."""
         assert isinstance(llm.total_tokens, MetricBuilder)
         assert isinstance(llm.cost, MetricBuilder)
-        assert isinstance(llm.completeness, MetricBuilder)
+        assert isinstance(llm.latency, MetricBuilder)
 
         metric = llm.total_tokens.from_output("usage.tokens")
         assert metric.name == "total_tokens"
