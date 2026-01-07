@@ -144,7 +144,7 @@ class MetricsReporter:
             values: List of numeric values
 
         Returns:
-            String of Unicode block characters
+            String of Unicode block characters wrapped in backticks for monospace rendering
         """
         if not values or len(values) < 2:
             return "N/A"
@@ -154,12 +154,16 @@ class MetricsReporter:
 
         # Avoid division by zero
         if max_val == min_val:
-            return self.BLOCKS[4] * len(values)  # Use middle block
+            sparkline = self.BLOCKS[4] * len(values)  # Use middle block
+        else:
+            # Normalize values to 0-7 range (for 8 block characters)
+            normalized = [
+                int(((v - min_val) / (max_val - min_val)) * 7) for v in values
+            ]
+            sparkline = "".join(self.BLOCKS[n] for n in normalized)
 
-        # Normalize values to 0-7 range (for 8 block characters)
-        normalized = [int(((v - min_val) / (max_val - min_val)) * 7) for v in values]
-
-        return "".join(self.BLOCKS[n] for n in normalized)
+        # Wrap in backticks for consistent monospace rendering and baseline alignment
+        return f"`{sparkline}`"
 
     def _compare_values(
         self, current: float, previous: float, threshold: float = 0.01
@@ -684,6 +688,8 @@ class MetricsReporter:
                 values = [v for v in values if v is not None]
 
                 if values:
+                    # Use last 10 values for consistent sparkline length
+                    values = values[-10:]
                     sparkline = self._create_sparkline(values)
                     current = values[-1]
                     current_fmt = self._format_system_metric(metric_name, current)
@@ -709,6 +715,8 @@ class MetricsReporter:
                 values = [v for v in values if v is not None]
 
                 if values:
+                    # Use last 10 values for consistent sparkline length
+                    values = values[-10:]
                     sparkline = self._create_sparkline(values)
                     current = values[-1]
 
