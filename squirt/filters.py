@@ -106,10 +106,10 @@ def apply_runtime_filters(metrics: Sequence[Metric | Any]) -> list[Metric]:
         if name_lower == "m" and "builtin" in ns_class_name:
             return True
 
-        # Match by class name (e.g., "AzureMetrics" matches "azure")
-        # Remove "Metrics" suffix and compare
+        # Match by class name (e.g., "AzureAIMetrics" matches "azure")
+        # Remove "Metrics" suffix and check if filter name is prefix or substring
         class_name_base = ns_class_name.replace("metrics", "").strip("_")
-        if class_name_base == name_lower:
+        if class_name_base == name_lower or class_name_base.startswith(name_lower):
             return True
 
         # Match by last part of module name (e.g., "squirt.contrib.azure" matches "azure")
