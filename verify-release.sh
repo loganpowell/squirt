@@ -74,8 +74,8 @@ echo
 # Test checks
 info "Checking tests..."
 if command -v pytest > /dev/null 2>&1; then
-    check "Tests exist" "test -d tests"
-    check "Tests pass" "pytest tests/ -q > /dev/null 2>&1"
+    check "Tests exist" "test -d squirt/tests"
+    check "Tests pass" "pytest squirt/tests/ -q > /dev/null 2>&1"
 else
     echo -e "${YELLOW}⚠️  pytest not found, skipping test checks${NC}"
 fi
