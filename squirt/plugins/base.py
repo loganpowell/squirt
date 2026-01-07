@@ -50,6 +50,8 @@ class MetricNamespace:
         system_metric: SystemMetric | None = None,
         inverted: bool = False,
         description: str = "",
+        assertion_mode: bool = False,
+        failure_threshold: float | int | None = None,
     ) -> MetricBuilder:
         """
         Define a metric in this namespace.
@@ -60,6 +62,8 @@ class MetricNamespace:
             system_metric: Optional mapping to canonical system metric
             inverted: If True, lower values are better (e.g., error_rate)
             description: Human-readable description
+            assertion_mode: If True, automatically fail tests when metric fails
+            failure_threshold: Threshold below which metric is considered failed
 
         Returns:
             MetricBuilder for fluent configuration
@@ -70,6 +74,8 @@ class MetricNamespace:
             system_metric=system_metric,
             inverted=inverted,
             description=description,
+            assertion_mode=assertion_mode,
+            failure_threshold=failure_threshold,
             namespace=self,
         )
 

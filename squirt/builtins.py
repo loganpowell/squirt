@@ -62,10 +62,11 @@ class BuiltinMetrics(MetricNamespace):
         """Whether execution completed without errors (1.0 = no errors)."""
         return self._define(
             name="error_free",
-            aggregation=AggregationType.AVERAGE,
             system_metric=SystemMetric.ERROR_RATE,
             inverted=True,
             description="Error-free execution rate",
+            assertion_mode=True,
+            failure_threshold=0.0,
         )
 
     @property
@@ -73,7 +74,6 @@ class BuiltinMetrics(MetricNamespace):
         """Whether output structure is valid (1.0 = valid)."""
         return self._define(
             name="structure_valid",
-            aggregation=AggregationType.AVERAGE,
             system_metric=SystemMetric.ERROR_RATE,
             inverted=True,
             description="Output structure validity",
