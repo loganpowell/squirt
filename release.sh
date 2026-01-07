@@ -169,7 +169,11 @@ fi
 
 # 6. Build package
 info "Building package..."
-run_cmd python -m build --clean
+# Clean dist directory first
+if [ "$DRY_RUN" = false ]; then
+    rm -rf dist/ build/ *.egg-info
+fi
+run_cmd python -m build
 
 if [ "$DRY_RUN" = false ]; then
     success "Package built successfully"
