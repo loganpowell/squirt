@@ -253,25 +253,18 @@ if [ "$DRY_RUN" = false ]; then
             echo ""
             echo "To publish manually, run:"
             echo "  python -m twine upload dist/*"
-            exit 0
         fi
     fi
-        
-        echo ""
-        echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo -e "${GREEN}🎉 Release $NEW_VERSION completed successfully!${NC}"
-        echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo ""
-        echo -e "${BLUE}📦 Install with: pip install squirt==$NEW_VERSION${NC}"
-        echo -e "${BLUE}🔗 PyPI: https://pypi.org/project/squirt/$NEW_VERSION/${NC}"
-        echo -e "${BLUE}🏷️  Tag: https://github.com/loganpowell/squirt/releases/tag/v$NEW_VERSION${NC}"
-        echo ""
-    else
-        warning "Skipping PyPI upload"
-        echo ""
-        echo "To publish manually, run:"
-        echo "  python -m twine upload dist/*"
-    fi
+    
+    echo ""
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}🎉 Release $NEW_VERSION completed successfully!${NC}"
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "${BLUE}📦 Install with: pip install squirt==$NEW_VERSION${NC}"
+    echo -e "${BLUE}🔗 PyPI: https://pypi.org/project/squirt/$NEW_VERSION/${NC}"
+    echo -e "${BLUE}🏷️  Tag: https://github.com/loganpowell/squirt/releases/tag/v$NEW_VERSION${NC}"
+    echo ""
 else
     warning "[DRY RUN] Would prompt for PyPI upload"
     echo ""
