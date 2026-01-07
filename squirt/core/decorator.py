@@ -26,31 +26,30 @@ from __future__ import annotations
 import contextvars
 import json
 import time
+from collections.abc import Callable, Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Type, Union
+from typing import Any
 
-from .types import Metric, MetricResult
-from .resources import ResourceTracker, inject_metrics_into_output
-from ..plugins.base import MetricBuilder
 from ..builtins import BuiltinMetrics
-
+from ..plugins.base import MetricBuilder
+from .resources import ResourceTracker, inject_metrics_into_output
+from .types import Metric, MetricResult
 
 # =============================================================================
 # Expectations Configuration
 # =============================================================================
 
-_expectations_config: contextvars.ContextVar[Dict[str, Any]] = contextvars.ContextVar(
+_expectations_config: contextvars.ContextVar[dict[str, Any]] = contextvars.ContextVar(
     "expectations_config",
     default={"path": None, "data": []},
 )
 
 
 def configure_expectations(
-    path: Optional[Union[str, Path]] = None,
-    data: Optional[List[Dict[str, Any]]] = None,
+    path: str | Path | None = None,
+    data: list[dict[str, Any]] | None = None,
 ) -> None:
     """
     Configure the expectations source for all tracked components.
@@ -75,7 +74,7 @@ def configure_expectations(
     _expectations_config.set(config)
 
 
-def get_expectations() -> List[Dict[str, Any]]:
+def get_expectations() -> list[dict[str, Any]]:
     """Get the currently configured expectations data."""
     return _expectations_config.get().get("data", [])
 
@@ -84,14 +83,14 @@ def get_expectations() -> List[Dict[str, Any]]:
 # Test Context
 # =============================================================================
 
-_test_context: contextvars.ContextVar[Dict[str, Any]] = contextvars.ContextVar(
+_test_context: contextvars.ContextVar[dict[str, Any]] = contextvars.ContextVar(
     "test_context",
     default={"test_case_id": "", "expectations": {}},
 )
 
 
 def set_test_context(
-    test_case_id: str, expectations: Optional[Dict[str, Any]] = None
+    test_case_id: str, expectations: dict[str, Any] | None = None
 ) -> None:
     """
     Set the context for the current test case.
@@ -111,7 +110,7 @@ def set_test_context(
     )
 
 
-def get_test_context() -> Dict[str, Any]:
+def get_test_context() -> dict[str, Any]:
     """Get the current test context."""
     return _test_context.get()
 
@@ -122,7 +121,7 @@ def get_test_context() -> Dict[str, Any]:
 # Component Execution Stack
 # =============================================================================
 
-_component_stack: contextvars.ContextVar[List[str]] = contextvars.ContextVar(
+_component_stack: contextvars.ContextVar[list[str]] = contextvars.ContextVar(
     "component_stack", default=[]
 )
 
@@ -163,7 +162,7 @@ def is_child_execution() -> bool:
     return True  # We're nested, so assume it's a child
 
 
-def get_parent_component() -> Optional[str]:
+def get_parent_component() -> str | None:
     """Get the name of the parent component if executing as child."""
     stack = _component_stack.get()
     return stack[-1] if len(stack) > 0 else None
@@ -185,7 +184,7 @@ def component_context(name: str):
 # Metrics Results Storage
 # =============================================================================
 
-_metrics_results: contextvars.ContextVar[List[MetricResult]] = contextvars.ContextVar(
+_metrics_results: contextvars.ContextVar[list[MetricResult]] = contextvars.ContextVar(
     "metrics_results", default=[]
 )
 
@@ -213,7 +212,7 @@ def record_result(result: MetricResult) -> None:
         pass  # No global client configured
 
 
-def get_results() -> List[MetricResult]:
+def get_results() -> list[MetricResult]:
     """Get all recorded metric results."""
     return _metrics_results.get()
 
@@ -230,8 +229,8 @@ def clear_results() -> None:
 
 def track(
     metrics: Sequence[Metric | MetricBuilder | BuiltinMetrics] = [],
-    expects: Optional[str] = None,
-    source: Optional[str] = None,
+    expects: str | None = None,
+    source: str | None = None,
     record_when_child: bool = False,
     auto_inject_resources: bool = True,
 ) -> Callable:
@@ -367,9 +366,13 @@ def track(
                             SystemMetric.CPU_PERCENT.value
                         )
 
-                    # Then collect user-defined metrics
+                    # Then collect user-defined metrics (apply runtime filters first)
+                    from ..filters import apply_runtime_filters
+
+                    filtered_metrics = apply_runtime_filters(metrics)
+
                     assertion_failures = []
-                    for metric in metrics:
+                    for metric in filtered_metrics:
                         if isinstance(metric, Metric):
                             try:
                                 value = metric.transform(inputs, result)

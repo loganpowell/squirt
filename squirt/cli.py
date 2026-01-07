@@ -20,9 +20,8 @@ import argparse
 import json
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 
 def _get_git_hash() -> str:
@@ -110,7 +109,7 @@ def cmd_trends(args: argparse.Namespace) -> int:
         return 1
 
     # Load history
-    history: List[Dict[str, Any]] = []
+    history: list[dict[str, Any]] = []
     with open(history_file) as f:
         for line in f:
             if line.strip():
@@ -157,7 +156,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
         return 1
 
     # Load history
-    history: List[Dict[str, Any]] = []
+    history: list[dict[str, Any]] = []
     with open(history_file) as f:
         for line in f:
             if line.strip():
@@ -168,7 +167,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
         return 1
 
     # Find baseline and current
-    def find_entry(identifier: str) -> Optional[Dict[str, Any]]:
+    def find_entry(identifier: str) -> dict[str, Any] | None:
         for entry in reversed(history):
             if identifier in (entry.get("commit", ""), entry.get("branch", "")):
                 return entry
@@ -177,7 +176,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
     baseline = find_entry(args.baseline) or history[-2]
     current = find_entry(args.current) or history[-1]
 
-    print(f"\n📊 Comparing metrics:\n")
+    print("\n📊 Comparing metrics:\n")
     print(
         f"  Baseline: {baseline.get('commit', '?')[:7]} ({baseline.get('timestamp', '')[:19]})"
     )
@@ -246,7 +245,7 @@ def cmd_check_regression(args: argparse.Namespace) -> int:
         print("⚠️  No history found - cannot check regression (first run?)")
         return 0  # Don't fail on first run
 
-    history: List[Dict[str, Any]] = []
+    history: list[dict[str, Any]] = []
     with open(history_file) as f:
         for line in f:
             if line.strip():
@@ -278,7 +277,7 @@ def cmd_check_regression(args: argparse.Namespace) -> int:
     pct_drop = (accuracy_drop / previous_accuracy) * 100 if previous_accuracy > 0 else 0
 
     threshold = args.threshold
-    print(f"\\n📊 Accuracy Regression Check")
+    print("\\n📊 Accuracy Regression Check")
     print(
         f"   Previous: {previous_accuracy:.2%} (commit {previous.get('commit', 'unknown')[:7]})"
     )
@@ -291,7 +290,7 @@ def cmd_check_regression(args: argparse.Namespace) -> int:
         print(f"   This exceeds the {threshold}% threshold.")
         return 1
     else:
-        print(f"✅ No significant regression detected")
+        print("✅ No significant regression detected")
         return 0
 
 
@@ -310,7 +309,7 @@ def cmd_insights(args: argparse.Namespace) -> int:
         current = json.load(f)
 
     # Load history
-    history: List[Dict[str, Any]] = []
+    history: list[dict[str, Any]] = []
     history_file = history_dir / "metrics_history.jsonl"
     if history_file.exists():
         with open(history_file) as f:
@@ -319,7 +318,7 @@ def cmd_insights(args: argparse.Namespace) -> int:
                     history.append(json.loads(line))
 
     # Load hierarchical report
-    hierarchical: List[Dict[str, Any]] = []
+    hierarchical: list[dict[str, Any]] = []
     hierarchical_file = results_dir / "hierarchical_report.json"
     if hierarchical_file.exists():
         with open(hierarchical_file) as f:
@@ -393,7 +392,7 @@ def cmd_pr_comment(args: argparse.Namespace) -> int:
     return 0
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         prog="squirt",
@@ -417,7 +416,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     report_subparsers = report_parser.add_subparsers(dest="report_command")
 
     # report generate
-    gen_parser = report_subparsers.add_parser("generate", help="Generate reports")
+    report_subparsers.add_parser("generate", help="Generate reports")
 
     # report trends
     trends_parser = report_subparsers.add_parser("trends", help="Show metric trends")
@@ -440,9 +439,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
 
     # report insights
-    insights_parser = report_subparsers.add_parser(
-        "insights", help="Generate insight report"
-    )
+    report_subparsers.add_parser("insights", help="Generate insight report")
 
     # report full
     full_parser = report_subparsers.add_parser(

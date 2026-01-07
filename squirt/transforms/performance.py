@@ -4,10 +4,10 @@ Performance Transform Functions
 Extract system performance metrics from component outputs.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 
-def memory_usage_transform(inputs: Dict[str, Any], output: Any) -> float:
+def memory_usage_transform(inputs: dict[str, Any], output: Any) -> float:
     """
     Extract peak memory usage in MB from output metadata.
 
@@ -21,7 +21,7 @@ def memory_usage_transform(inputs: Dict[str, Any], output: Any) -> float:
     return 0.0
 
 
-def cpu_usage_transform(inputs: Dict[str, Any], output: Any) -> float:
+def cpu_usage_transform(inputs: dict[str, Any], output: Any) -> float:
     """
     Extract average CPU usage percentage from output metadata.
 
@@ -35,7 +35,7 @@ def cpu_usage_transform(inputs: Dict[str, Any], output: Any) -> float:
     return 0.0
 
 
-def throughput_transform(inputs: Dict[str, Any], output: Any) -> float:
+def throughput_transform(inputs: dict[str, Any], output: Any) -> float:
     """
     Calculate throughput (items per second) from output metadata.
 
@@ -61,7 +61,7 @@ def throughput_transform(inputs: Dict[str, Any], output: Any) -> float:
     return item_count / runtime_sec
 
 
-def latency_p95_transform(inputs: Dict[str, Any], output: Any) -> float:
+def latency_p95_transform(inputs: dict[str, Any], output: Any) -> float:
     """
     Extract 95th percentile latency from output metadata.
 

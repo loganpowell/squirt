@@ -7,12 +7,11 @@ Provides the unified pattern for defining metrics with full IDE support.
 
 from __future__ import annotations
 
-from typing import Optional
+from ..categories.system import SystemMetric
+from ..core.types import AggregationType
 
 # Import MetricBuilder from the canonical location
 from ..metrics import MetricBuilder
-from ..core.types import AggregationType
-from ..categories.system import SystemMetric
 
 
 class MetricNamespace:
@@ -47,8 +46,8 @@ class MetricNamespace:
     def _define(
         self,
         name: str,
-        aggregation: Optional[AggregationType] = None,
-        system_metric: Optional[SystemMetric] = None,
+        aggregation: AggregationType | None = None,
+        system_metric: SystemMetric | None = None,
         inverted: bool = False,
         description: str = "",
     ) -> MetricBuilder:
@@ -71,6 +70,7 @@ class MetricNamespace:
             system_metric=system_metric,
             inverted=inverted,
             description=description,
+            namespace=self,
         )
 
 

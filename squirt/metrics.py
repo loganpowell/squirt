@@ -55,12 +55,12 @@ See MetricBuilder class docstring for detailed examples of:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any
 
-from .core.types import AggregationType, Metric
 from .categories.system import SystemMetric
-
+from .core.types import AggregationType, Metric
 
 # =============================================================================
 # Core Types (re-exported for convenience)
@@ -96,7 +96,7 @@ class _MetricDefinition:
 
     name: str
     aggregation: AggregationType
-    system_metric: Optional[SystemMetric] = None
+    system_metric: SystemMetric | None = None
     inverted: bool = False
     description: str = ""
 
@@ -171,17 +171,19 @@ class MetricBuilder:
         "_description",
         "_assertion_mode",
         "_failure_threshold",
+        "_namespace",
     )
 
     def __init__(
         self,
         name: str,
-        aggregation: Optional[AggregationType] = None,
-        system_metric: Optional[SystemMetric] = None,
+        aggregation: AggregationType | None = None,
+        system_metric: SystemMetric | None = None,
         inverted: bool = False,
         description: str = "",
         assertion_mode: bool = False,
-        failure_threshold: Union[float, int] = 0.0,
+        failure_threshold: float | int | None = None,
+        namespace: Any | None = None,
     ):
         from .categories.system import get_aggregation_type
 
@@ -196,6 +198,7 @@ class MetricBuilder:
         self._description = description
         self._assertion_mode = assertion_mode
         self._failure_threshold = failure_threshold
+        self._namespace = namespace
 
     @property
     def name(self) -> str:
@@ -211,11 +214,11 @@ class MetricBuilder:
         return self._aggregation
 
     @property
-    def system_metric(self) -> Optional[SystemMetric]:
+    def system_metric(self) -> SystemMetric | None:
         """The system-level metric category."""
         return self._system_metric
 
-    def from_output(self, path_or_fn: Union[str, Callable[[Any], Any]]) -> Metric:
+    def from_output(self, path_or_fn: str | Callable[[Any], Any]) -> Metric:
         """
         Extract metric value directly from component output.
 
@@ -234,7 +237,7 @@ class MetricBuilder:
         if isinstance(path_or_fn, str):
             path = path_or_fn
 
-            def extractor(inputs: Dict[str, Any], output: Any) -> Any:
+            def extractor(inputs: dict[str, Any], output: Any) -> Any:
                 value = output
                 for key in path.split("."):
                     if isinstance(value, dict):
@@ -246,11 +249,11 @@ class MetricBuilder:
         else:
             fn = path_or_fn
 
-            def extractor(inputs: Dict[str, Any], output: Any) -> Any:
+            def extractor(inputs: dict[str, Any], output: Any) -> Any:
                 return fn(output)
 
         assert self._aggregation is not None, "Aggregation must be set"
-        return Metric(
+        metric = Metric(
             name=self._name,
             transform=extractor,
             agg=self._aggregation,
@@ -258,8 +261,10 @@ class MetricBuilder:
             is_assertion=self._assertion_mode,
             system_metric=self._system_metric,
         )
+        metric._namespace = self._namespace
+        return metric
 
-    def compute(self, transform_fn: Callable[[Dict[str, Any], Any], Any]) -> Metric:
+    def compute(self, transform_fn: Callable[[dict[str, Any], Any], Any]) -> Metric:
         """
         Compute metric using full transform signature with inputs and output.
 
@@ -278,7 +283,7 @@ class MetricBuilder:
             metrics.custom("accuracy").compute(my_accuracy)
         """
         assert self._aggregation is not None, "Aggregation must be set"
-        return Metric(
+        metric = Metric(
             name=self._name,
             transform=transform_fn,
             agg=self._aggregation,
@@ -286,11 +291,13 @@ class MetricBuilder:
             is_assertion=self._assertion_mode,
             system_metric=self._system_metric,
         )
+        metric._namespace = self._namespace
+        return metric
 
     def assert_passes(
         self,
-        transform_fn: Callable[[Dict[str, Any], Any], Any],
-        threshold: Union[float, int] = 0.0,
+        transform_fn: Callable[[dict[str, Any], Any], Any],
+        threshold: float | int = 0.0,
     ) -> Metric:
         """
         Create an assertion metric that fails tests if the transform returns a failure value.
@@ -331,8 +338,8 @@ class MetricBuilder:
     def compare_to_expected(
         self,
         expected_key: str,
-        output_key: Optional[str] = None,
-        similarity_fn: Optional[Callable[[Any, Any], float]] = None,
+        output_key: str | None = None,
+        similarity_fn: Callable[[Any, Any], float] | None = None,
     ) -> Metric:
         """
         Compare component output to expected value from expectations.
@@ -374,7 +381,7 @@ class MetricBuilder:
 
         compare_fn = similarity_fn or default_similarity
 
-        def transform(inputs: Dict[str, Any], output: Any) -> float:
+        def transform(inputs: dict[str, Any], output: Any) -> float:
             expected = extract_by_path(inputs, expected_key)
             actual = extract_by_path(output, output_key) if output_key else output
             return compare_fn(expected, actual)
@@ -387,7 +394,7 @@ class MetricBuilder:
             system_metric=self._system_metric,
         )
 
-    def evaluate(self, evaluator: Callable[[Dict[str, Any], Any], Any]) -> Metric:
+    def evaluate(self, evaluator: Callable[[dict[str, Any], Any], Any]) -> Metric:
         """
         Use an external evaluator (Azure AI SDK, custom evaluator, etc).
 
@@ -456,8 +463,8 @@ assert_passes: MetricBuilder = MetricBuilder(
 
 def custom(
     name: str,
-    aggregation: Optional[AggregationType] = None,
-    system_metric: Optional[SystemMetric] = None,
+    aggregation: AggregationType | None = None,
+    system_metric: SystemMetric | None = None,
     description: str = "",
 ) -> MetricBuilder:
     """

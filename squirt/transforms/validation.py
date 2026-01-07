@@ -5,10 +5,11 @@ Check output validity against schemas and constraints.
 """
 
 import json
-from typing import Any, Callable, Dict, List
+from collections.abc import Callable
+from typing import Any
 
 
-def json_valid_transform(inputs: Dict[str, Any], output: Any) -> bool:
+def json_valid_transform(inputs: dict[str, Any], output: Any) -> bool:
     """
     Check if output is valid JSON (for string outputs).
 
@@ -26,8 +27,8 @@ def json_valid_transform(inputs: Dict[str, Any], output: Any) -> bool:
 
 
 def has_required_fields_transform(
-    required_fields: List[str],
-) -> Callable[[Dict[str, Any], Any], bool]:
+    required_fields: list[str],
+) -> Callable[[dict[str, Any], Any], bool]:
     """
     Factory to check if output has required fields.
 
@@ -48,11 +49,11 @@ def has_required_fields_transform(
             ...
     """
 
-    def transform(inputs: Dict[str, Any], output: Any) -> bool:
+    def transform(inputs: dict[str, Any], output: Any) -> bool:
         if not isinstance(output, dict):
             return False
 
-        def check_nested(obj: Dict[str, Any], fields: List[str]) -> bool:
+        def check_nested(obj: dict[str, Any], fields: list[str]) -> bool:
             for field in fields:
                 parts = field.split(".")
                 current: Any = obj
@@ -67,7 +68,7 @@ def has_required_fields_transform(
     return transform
 
 
-def error_free_transform(inputs: Dict[str, Any], output: Any) -> bool:
+def error_free_transform(inputs: dict[str, Any], output: Any) -> bool:
     """
     Check if output contains no error indicators.
 
@@ -87,7 +88,7 @@ def error_free_transform(inputs: Dict[str, Any], output: Any) -> bool:
 
 def create_pydantic_validation_transform(
     schema_class: type,
-) -> Callable[[Dict[str, Any], Any], bool]:
+) -> Callable[[dict[str, Any], Any], bool]:
     """
     Factory to create a Pydantic validation transform.
 
@@ -113,7 +114,7 @@ def create_pydantic_validation_transform(
             ...
     """
 
-    def transform(inputs: Dict[str, Any], output: Any) -> bool:
+    def transform(inputs: dict[str, Any], output: Any) -> bool:
         try:
             if isinstance(output, dict):
                 schema_class(**output)

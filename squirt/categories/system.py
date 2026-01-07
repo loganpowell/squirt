@@ -5,7 +5,6 @@ Canonical system-level metrics that aggregate across the entire pipeline.
 """
 
 from enum import Enum
-from typing import Dict, Optional, Set
 
 
 class SystemMetric(Enum):
@@ -23,7 +22,7 @@ class SystemMetric(Enum):
 
 
 # Metrics that need inversion (higher is better → lower is better)
-INVERTED_METRICS: Set[str] = {
+INVERTED_METRICS: set[str] = {
     "error_free",
     "structure_valid",
     "expression_valid",
@@ -43,7 +42,7 @@ def get_aggregation_type(sys_metric: SystemMetric):
     """
     from ..core.types import AggregationType
 
-    SYSTEM_METRIC_AGGREGATION: Dict[SystemMetric, AggregationType] = {
+    SYSTEM_METRIC_AGGREGATION: dict[SystemMetric, AggregationType] = {
         SystemMetric.ACCURACY: AggregationType.AVERAGE,
         SystemMetric.RUNTIME_MS: AggregationType.SUM,
         SystemMetric.MEMORY_MB: AggregationType.MAX,

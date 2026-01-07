@@ -14,34 +14,42 @@ Usage:
         ...
 """
 
-from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
+from squirt.plugins import AggregationType, MetricBuilder, MetricNamespace
 
 
-class ChunkMetrics:
+class ChunkMetrics(MetricNamespace):
     """
     Metrics for text/document chunking operations.
 
     Tracks chunk characteristics like counts, sizes, overlap, and distribution.
-    All attributes have explicit type annotations for IDE autocomplete support.
     """
 
-    count: MetricBuilder = MetricBuilder(
-        "chunk_count",
-        AggregationType.SUM,
-        description="Number of chunks produced",
-    )
+    @property
+    def count(self) -> MetricBuilder:
+        """Number of chunks produced."""
+        return self._define(
+            "chunk_count",
+            aggregation=AggregationType.SUM,
+            description="Number of chunks produced",
+        )
 
-    avg_size: MetricBuilder = MetricBuilder(
-        "avg_chunk_size",
-        AggregationType.AVERAGE,
-        description="Average chunk size (tokens or characters)",
-    )
+    @property
+    def avg_size(self) -> MetricBuilder:
+        """Average chunk size (tokens or characters)."""
+        return self._define(
+            "avg_chunk_size",
+            aggregation=AggregationType.AVERAGE,
+            description="Average chunk size (tokens or characters)",
+        )
 
-    total_size: MetricBuilder = MetricBuilder(
-        "total_chunk_size",
-        AggregationType.SUM,
-        description="Total size of all chunks",
-    )
+    @property
+    def total_size(self) -> MetricBuilder:
+        """Total size of all chunks."""
+        return self._define(
+            "total_chunk_size",
+            aggregation=AggregationType.SUM,
+            description="Total size of all chunks",
+        )
 
     # Quality metrics (implementation-specific)
     # Projects should define chunking quality metrics based on their needs:

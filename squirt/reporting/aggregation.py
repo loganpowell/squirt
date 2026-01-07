@@ -23,19 +23,20 @@ from __future__ import annotations
 import json
 import time
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Set, Union
+from typing import TYPE_CHECKING, Any
 
 from ..core.types import AggregationType, MetricResult
 
 if TYPE_CHECKING:
-    from ..analysis.graph_builder import DependencyGraph
+    pass
 
 
 def aggregate_values(
-    values: Sequence[Union[float, int, bool]], agg_type: Union[AggregationType, str]
-) -> Union[float, int]:
+    values: Sequence[float | int | bool], agg_type: AggregationType | str
+) -> float | int:
     """
     Apply aggregation to a list of values.
 
@@ -80,7 +81,7 @@ def aggregate_values(
     return 0
 
 
-def _get_agg_suffix(agg_type: Union[AggregationType, str]) -> str:
+def _get_agg_suffix(agg_type: AggregationType | str) -> str:
     """Get suffix for aggregated metric name based on aggregation type.
 
     Uses dot notation (e.g., .sum, .max) so metrics can be easily parsed
@@ -110,13 +111,13 @@ class ComponentReport:
     """Report for a single component."""
 
     component: str
-    metrics: Dict[str, Union[float, int, bool]]
-    aggregation_types: Dict[str, str]
-    parent: Optional[str] = None
-    children: List[str] = field(default_factory=list)
+    metrics: dict[str, float | int | bool]
+    aggregation_types: dict[str, str]
+    parent: str | None = None
+    children: list[str] = field(default_factory=list)
     timestamp: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "component": self.component,
@@ -138,12 +139,12 @@ class SystemHeartbeat:
     """
 
     timestamp: float
-    metrics: Dict[str, Union[float, int]]
+    metrics: dict[str, float | int]
     component_count: int
-    system_metrics: Dict[str, Union[float, int]] = field(default_factory=dict)
-    components: List[ComponentReport] = field(default_factory=list)
+    system_metrics: dict[str, float | int] = field(default_factory=dict)
+    components: list[ComponentReport] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "timestamp": self.timestamp,
@@ -156,7 +157,7 @@ class SystemHeartbeat:
         """Convert to JSON string."""
         return json.dumps(self.to_dict(), indent=indent)
 
-    def save(self, path: Union[str, Path]) -> None:
+    def save(self, path: str | Path) -> None:
         """Save to file."""
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -164,7 +165,7 @@ class SystemHeartbeat:
             json.dump(self.to_dict(), f, indent=2)
 
 
-def aggregate_results(results: List[MetricResult]) -> Dict[str, Union[float, int]]:
+def aggregate_results(results: list[MetricResult]) -> dict[str, float | int]:
     """
     Aggregate metrics across all results.
 
@@ -178,8 +179,8 @@ def aggregate_results(results: List[MetricResult]) -> Dict[str, Union[float, int
         return {}
 
     # Group values by metric name
-    metric_values: Dict[str, List] = {}
-    metric_agg_types: Dict[str, AggregationType] = {}
+    metric_values: dict[str, list] = {}
+    metric_agg_types: dict[str, AggregationType] = {}
 
     for result in results:
         for name, value in result.metrics.items():
@@ -201,7 +202,7 @@ def aggregate_results(results: List[MetricResult]) -> Dict[str, Union[float, int
     return aggregated
 
 
-def generate_heartbeat(results: List[MetricResult]) -> SystemHeartbeat:
+def generate_heartbeat(results: list[MetricResult]) -> SystemHeartbeat:
     """
     Generate a system heartbeat from metric results.
 
@@ -212,9 +213,9 @@ def generate_heartbeat(results: List[MetricResult]) -> SystemHeartbeat:
         SystemHeartbeat with aggregated metrics
     """
     # Group results by component and average within each component
-    component_metrics: Dict[str, Dict[str, List]] = {}
-    aggregation_types: Dict[str, str] = {}
-    system_metric_maps: Dict[str, Dict[str, str]] = (
+    component_metrics: dict[str, dict[str, list]] = {}
+    aggregation_types: dict[str, str] = {}
+    system_metric_maps: dict[str, dict[str, str]] = (
         {}
     )  # Store system_metric_map per component
 
@@ -236,14 +237,14 @@ def generate_heartbeat(results: List[MetricResult]) -> SystemHeartbeat:
                 aggregation_types[metric_name] = agg_type
 
     # Average within each component (across test cases)
-    component_averaged: Dict[str, Dict[str, float]] = {}
+    component_averaged: dict[str, dict[str, float]] = {}
     for comp, metrics in component_metrics.items():
         component_averaged[comp] = {}
         for metric_name, values in metrics.items():
             component_averaged[comp][metric_name] = aggregate_values(values, "average")
 
     # Aggregate across components using defined aggregation_types
-    system_metrics: Dict[str, float] = {}
+    system_metrics: dict[str, float] = {}
 
     # Get all unique metrics across all components
     all_metric_names = set()
@@ -310,12 +311,12 @@ def generate_heartbeat(results: List[MetricResult]) -> SystemHeartbeat:
 def _aggregate_node_recursive(
     node_name: str,
     graph,
-    component_results: Dict[str, Dict],
-    node_metrics: Dict[str, Dict],
-    include_components: Optional[Set[str]] = None,
-    parent_name: Optional[str] = None,
-    visited: Optional[Set[str]] = None,
-) -> Dict:
+    component_results: dict[str, dict],
+    node_metrics: dict[str, dict],
+    include_components: set[str] | None = None,
+    parent_name: str | None = None,
+    visited: set[str] | None = None,
+) -> dict:
     """
     Recursively aggregate metrics from a node and all its children.
 
@@ -386,7 +387,7 @@ def _aggregate_node_recursive(
         return node_metrics[node_name]
 
     # Has children: recursively aggregate
-    metric_data: Dict[str, Dict[str, Any]] = defaultdict(
+    metric_data: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"values": [], "agg": None}
     )
 
@@ -446,10 +447,10 @@ def _aggregate_node_recursive(
 
 def aggregate_metrics_from_graph(
     graph,
-    results_dir: Union[str, Path],
-    include_components: Optional[Set[str]] = None,
+    results_dir: str | Path,
+    include_components: set[str] | None = None,
     save_reports: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Recursively aggregate metrics from leaf components up to root using a dependency graph.
 
@@ -509,7 +510,7 @@ def aggregate_metrics_from_graph(
         root_nodes = list(component_results.keys())
 
     # Recursively aggregate from each root
-    node_metrics: Dict[str, Dict] = {}
+    node_metrics: dict[str, dict] = {}
     for root in root_nodes:
         _aggregate_node_recursive(
             node_name=root,
@@ -533,10 +534,10 @@ def aggregate_metrics_from_graph(
 
 
 def _aggregate_multiple_roots(
-    root_nodes: List[str], node_metrics: Dict[str, Dict]
-) -> Dict[str, Union[float, int]]:
+    root_nodes: list[str], node_metrics: dict[str, dict]
+) -> dict[str, float | int]:
     """Aggregate metrics from multiple root nodes."""
-    metric_data: Dict[str, Dict[str, Any]] = defaultdict(
+    metric_data: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"values": [], "agg": None}
     )
 
@@ -554,7 +555,7 @@ def _aggregate_multiple_roots(
                 if not metric_data[metric_name]["agg"]:
                     metric_data[metric_name]["agg"] = agg_types.get(metric_name)
 
-    heartbeat: Dict[str, Union[float, int]] = {}
+    heartbeat: dict[str, float | int] = {}
     for metric_name, data in metric_data.items():
         values = data["values"] or []
         agg_type = data["agg"] or "average"
@@ -563,7 +564,7 @@ def _aggregate_multiple_roots(
     return heartbeat
 
 
-def save_hierarchical_reports(node_metrics: Dict[str, Dict], results_dir: Path) -> None:
+def save_hierarchical_reports(node_metrics: dict[str, dict], results_dir: Path) -> None:
     """
     Save all component reports as a single flat list.
 
@@ -591,9 +592,9 @@ def save_hierarchical_reports(node_metrics: Dict[str, Dict], results_dir: Path) 
 
 def generate_heartbeat_from_graph(
     graph,
-    results_dir: Union[str, Path],
-    include_components: Optional[Set[str]] = None,
-) -> Dict[str, Any]:
+    results_dir: str | Path,
+    include_components: set[str] | None = None,
+) -> dict[str, Any]:
     """
     Generate a system heartbeat using graph-based hierarchical aggregation.
 
@@ -611,9 +612,9 @@ def generate_heartbeat_from_graph(
     results_dir = Path(results_dir)
 
     # Load component results and average within each component (across test cases)
-    component_averaged: Dict[str, Dict[str, float]] = {}
-    aggregation_types: Dict[str, str] = {}
-    system_metric_maps: Dict[str, Dict[str, str]] = (
+    component_averaged: dict[str, dict[str, float]] = {}
+    aggregation_types: dict[str, str] = {}
+    system_metric_maps: dict[str, dict[str, str]] = (
         {}
     )  # Store system_metric_map per component
 
@@ -642,7 +643,7 @@ def generate_heartbeat_from_graph(
                 aggregation_types[metric_name] = agg_type
 
     # Aggregate across components using defined aggregation_types
-    system_metrics: Dict[str, float] = {}
+    system_metrics: dict[str, float] = {}
 
     # Get all unique metrics across all components
     all_metric_names = set()
@@ -697,8 +698,8 @@ def generate_heartbeat_from_graph(
 
 
 def find_bottlenecks(
-    results_dir: Union[str, Path], metric_name: str = "runtime_ms", top_n: int = 5
-) -> List[Dict]:
+    results_dir: str | Path, metric_name: str = "runtime_ms", top_n: int = 5
+) -> list[dict]:
     """
     Find the top N components with highest values for a metric.
 
@@ -745,8 +746,8 @@ def find_bottlenecks(
 
 
 def find_underperforming_components(
-    results_dir: Union[str, Path], metric_name: str, threshold: float
-) -> List[Dict]:
+    results_dir: str | Path, metric_name: str, threshold: float
+) -> list[dict]:
     """
     Find all components below a performance threshold.
 
@@ -806,8 +807,8 @@ SYSTEM_METRIC_AGG_BY_NAME = {
 
 
 def aggregate_by_system_metrics(
-    component_results: Dict[str, Dict[str, Any]],
-) -> Dict[str, Union[float, int]]:
+    component_results: dict[str, dict[str, Any]],
+) -> dict[str, float | int]:
     """
     Aggregate component-level metrics into system-level metrics.
 
@@ -833,9 +834,10 @@ def aggregate_by_system_metrics(
         {"runtime_ms": 3500}  # SUM aggregation
     """
     from collections import defaultdict
+
     from ..categories import get_aggregation_type, should_invert
 
-    system_metric_data: Dict[str, Dict[str, Any]] = defaultdict(
+    system_metric_data: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"values": [], "agg": None}
     )
 
@@ -872,7 +874,7 @@ def aggregate_by_system_metrics(
                 system_metric_data[sys_metric_name]["agg"] = agg_type
 
     # Aggregate using correct aggregation type
-    system_metrics: Dict[str, Union[float, int]] = {}
+    system_metrics: dict[str, float | int] = {}
     for name, data in system_metric_data.items():
         values = data["values"]
         agg_type = data["agg"]

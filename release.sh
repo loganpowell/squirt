@@ -73,6 +73,14 @@ if [[ ! -f "$PYPROJECT" ]]; then
     error "Must run from squirt directory (where pyproject.toml is located)"
 fi
 
+# Load environment variables from .env file if it exists
+if [[ -f ".env" ]]; then
+    info "Loading environment from .env file..."
+    set -a  # Export all variables
+    source .env
+    set +a  # Stop exporting
+fi
+
 info "Starting release process for squirt..."
 
 # 1. Check git status
@@ -217,13 +225,37 @@ fi
 
 # 11. Publish to PyPI
 if [ "$DRY_RUN" = false ]; then
-    echo ""
-    read -p "🚀 Ready to publish to PyPI? (y/N) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        info "Publishing to PyPI..."
-        python -m twine upload dist/*
+    PYPI_TOKEN="${PYPI_API_TOKEN:-}"
+    
+    if [ -n "$PYPI_TOKEN" ]; then
+        info "Publishing to PyPI using API token..."
+        python -m twine upload -u __token__ -p "$PYPI_TOKEN" dist/*
         success "Published to PyPI!"
+    else
+        echo ""
+        warning "No PYPI_API_TOKEN found in environment"
+        echo ""
+        echo "To set up PyPI token authentication:"
+        echo "  1. Get token from https://pypi.org/manage/account/token/"
+        echo "  2. For local releases, create a .env file:"
+        echo "     echo 'PYPI_API_TOKEN=pypi-...' > .env"
+        echo "  3. For GitHub Actions, store as secret:"
+        echo "     gh secret set PYPI_API_TOKEN"
+        echo ""
+        read -p "🚀 Continue with interactive authentication? (y/N) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            info "Publishing to PyPI..."
+            python -m twine upload dist/*
+            success "Published to PyPI!"
+        else
+            warning "Skipping PyPI upload"
+            echo ""
+            echo "To publish manually, run:"
+            echo "  python -m twine upload dist/*"
+            exit 0
+        fi
+    fi
         
         echo ""
         echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

@@ -1,8 +1,8 @@
 """System metric categories."""
 
 from .system import (
-    SystemMetric,
     INVERTED_METRICS,
+    SystemMetric,
     get_aggregation_type,
     should_invert,
 )

@@ -8,7 +8,7 @@ These are used by the @track decorator to auto-inject metrics.
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any
 
 try:
     import psutil
@@ -26,7 +26,7 @@ class ResourceMetrics:
     memory_mb: float
     cpu_percent: float
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for injection into output."""
         return {
             "runtime_ms": self.runtime_ms,

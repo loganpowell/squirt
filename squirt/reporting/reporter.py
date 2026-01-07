@@ -12,7 +12,7 @@ import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from .aggregation import SystemHeartbeat
 from .insights import InsightGenerator
@@ -28,7 +28,7 @@ class MetricsReporter:
         self,
         results_dir: Path,
         history_dir: Path,
-        git_hash: Optional[str] = None,
+        git_hash: str | None = None,
     ):
         """
         Initialize the metrics reporter.
@@ -70,14 +70,14 @@ class MetricsReporter:
         except subprocess.CalledProcessError:
             return "unknown"
 
-    def _load_json(self, filepath: Path) -> Optional[Dict[str, Any]]:
+    def _load_json(self, filepath: Path) -> dict[str, Any] | None:
         """Load JSON file, return None if not found."""
         if not filepath.exists():
             return None
         with open(filepath) as f:
             return json.load(f)
 
-    def _load_component_results(self) -> Dict[str, Dict[str, Any]]:
+    def _load_component_results(self) -> dict[str, dict[str, Any]]:
         """Load all *_results.json component results."""
         from .aggregation import aggregate_values
 
@@ -113,7 +113,7 @@ class MetricsReporter:
                 }
         return components
 
-    def _load_history(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def _load_history(self, limit: int = 10) -> list[dict[str, Any]]:
         """
         Load historical metrics from jsonl file.
 
@@ -136,7 +136,7 @@ class MetricsReporter:
         # Return most recent entries first
         return sorted(history, key=lambda x: x["timestamp"], reverse=True)[:limit]
 
-    def _create_sparkline(self, values: List[float]) -> str:
+    def _create_sparkline(self, values: list[float]) -> str:
         """
         Create a sparkline from a list of values.
 
@@ -269,7 +269,7 @@ class MetricsReporter:
         # Read existing entries and filter out same commit
         existing_entries = []
         if history_file.exists():
-            with open(history_file, "r") as f:
+            with open(history_file) as f:
                 for line in f:
                     if line.strip():
                         entry = json.loads(line)
@@ -404,7 +404,7 @@ class MetricsReporter:
     def generate_full_report(self) -> str:
         """Generate detailed full report."""
         heartbeat = self._load_json(self.results_dir / "system_heartbeat.json")
-        hierarchical: List[Dict[str, Any]] = self._load_json(self.results_dir / "hierarchical_report.json")  # type: ignore
+        hierarchical: list[dict[str, Any]] = self._load_json(self.results_dir / "hierarchical_report.json")  # type: ignore
         components = self._load_component_results()
         history = self._load_history(limit=10)
 
@@ -445,9 +445,9 @@ class MetricsReporter:
 
     def _section_insights(
         self,
-        heartbeat: Dict[str, Any],
-        history: List[Dict[str, Any]],
-        hierarchical: Optional[List[Dict[str, Any]]],
+        heartbeat: dict[str, Any],
+        history: list[dict[str, Any]],
+        hierarchical: list[dict[str, Any]] | None,
     ) -> str:
         """Generate actionable insights section using squirt's InsightGenerator."""
         try:
@@ -486,8 +486,8 @@ class MetricsReporter:
 
     def _generate_insights_summary(
         self,
-        heartbeat: Dict[str, Any],
-        history: List[Dict[str, Any]],
+        heartbeat: dict[str, Any],
+        history: list[dict[str, Any]],
         hierarchical: Any,
     ) -> str:
         """Generate a brief insights summary for PR comments."""
@@ -558,7 +558,7 @@ class MetricsReporter:
         )
 
     def _section_executive_summary(
-        self, heartbeat: Dict[str, Any], history: List[Dict[str, Any]]
+        self, heartbeat: dict[str, Any], history: list[dict[str, Any]]
     ) -> str:
         """Generate executive summary section."""
         system_metrics = heartbeat.get("system_metrics", {})
@@ -649,7 +649,7 @@ class MetricsReporter:
         return "\n".join(lines)
 
     def _section_performance_trends(
-        self, history: List[Dict[str, Any]], heartbeat: Optional[Dict[str, Any]] = None
+        self, history: list[dict[str, Any]], heartbeat: dict[str, Any] | None = None
     ) -> str:
         """Generate performance trends section with sparklines."""
         if len(history) < 1:
@@ -667,7 +667,7 @@ class MetricsReporter:
         ]
 
         # Collect system metric values across history (prefer system over component)
-        metric_names: Set[str] = set()
+        metric_names: set[str] = set()
         has_system_metrics = any(entry.get("system_metrics") for entry in history)
 
         # Get current metrics from heartbeat if available
@@ -751,7 +751,7 @@ class MetricsReporter:
         return "\n".join(lines)
 
     def _section_component_performance(
-        self, components: Dict[str, Dict[str, Any]]
+        self, components: dict[str, dict[str, Any]]
     ) -> str:
         """Generate component performance table."""
         if not components:
@@ -800,7 +800,7 @@ class MetricsReporter:
         return "\n".join(lines)
 
     def _section_resource_treemaps(
-        self, components: Dict[str, Dict[str, Any]], hierarchical: List[Dict[str, Any]]
+        self, components: dict[str, dict[str, Any]], hierarchical: list[dict[str, Any]]
     ) -> str:
         """Generate treemap visualizations for resource distribution with hierarchy."""
         if not components:
@@ -814,8 +814,8 @@ class MetricsReporter:
         ]
 
         # Build hierarchy map from the actual graph structure
-        hierarchy_map: Dict[str, List[str]] = {}
-        component_parents: Dict[str, Optional[str]] = {}
+        hierarchy_map: dict[str, list[str]] = {}
+        component_parents: dict[str, str | None] = {}
 
         for item in hierarchical:
             comp_name = item["component"]
@@ -840,8 +840,8 @@ class MetricsReporter:
             metric_key: str,
             formatter_func,
             indent: int = 1,
-            visited: Optional[Set[str]] = None,
-        ) -> List[str]:
+            visited: set[str] | None = None,
+        ) -> list[str]:
             """Recursively build treemap tree structure with cycle detection."""
             if visited is None:
                 visited = set()
@@ -914,7 +914,7 @@ class MetricsReporter:
             # For memory_mb, filter out components with duplicate values
             # (they likely all measured the same process peak)
             if metric_key == "memory_mb":
-                seen_values: Dict[float, str] = {}
+                seen_values: dict[float, str] = {}
                 filtered_components = []
                 for comp in metric_components:
                     value = (
@@ -989,7 +989,7 @@ class MetricsReporter:
         return "\n".join(lines)
 
     def _section_metric_charts(
-        self, components: Dict[str, Dict[str, Any]], history: List[Dict[str, Any]]
+        self, components: dict[str, dict[str, Any]], history: list[dict[str, Any]]
     ) -> str:
         """Generate XY charts for metric trends."""
         if len(history) < 2:
@@ -1090,7 +1090,7 @@ class MetricsReporter:
 
         return "\n".join(lines)
 
-    def _section_dependency_tree(self, hierarchical: List[Dict[str, Any]]) -> str:
+    def _section_dependency_tree(self, hierarchical: list[dict[str, Any]]) -> str:
         """Generate dependency tree visualization."""
         if not hierarchical:
             return "\n".join(
@@ -1102,7 +1102,7 @@ class MetricsReporter:
             )
 
         # Build component lookup - use dict to deduplicate and get the most recent parent info
-        components_by_name: Dict[str, Dict[str, Any]] = {}
+        components_by_name: dict[str, dict[str, Any]] = {}
         for comp in hierarchical:
             name = comp["component"]
             # Keep the version with a parent if it exists, otherwise keep root
@@ -1125,7 +1125,7 @@ class MetricsReporter:
             component_name: str,
             indent: int = 0,
             is_last: bool = True,
-            parent_chain: Optional[set] = None,
+            parent_chain: set | None = None,
         ):
             if parent_chain is None:
                 parent_chain = set()
@@ -1173,7 +1173,7 @@ class MetricsReporter:
 
         return "\n".join(lines)
 
-    def _section_component_details(self, components: Dict[str, Dict[str, Any]]) -> str:
+    def _section_component_details(self, components: dict[str, dict[str, Any]]) -> str:
         """Generate detailed component breakdown."""
         if not components:
             return ""

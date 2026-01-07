@@ -2,15 +2,14 @@
 Tests for the Squirt metrics library.
 """
 
-import pytest
-from squirt import m, track, AggregationType, SystemMetric
+from squirt import AggregationType, SystemMetric, m, track
+from squirt.contrib.chunk import chunk
+from squirt.contrib.data import data
+from squirt.contrib.llm import llm
+from squirt.contrib.vector import vector
+from squirt.core.decorator import clear_results, get_results
 from squirt.metrics import MetricBuilder
 from squirt.plugins import MetricNamespace
-from squirt.core.decorator import get_results, clear_results
-from squirt.contrib.data import data
-from squirt.contrib.vector import vector
-from squirt.contrib.chunk import chunk
-from squirt.contrib.llm import llm
 
 
 class TestBuiltinMetrics:
@@ -325,8 +324,9 @@ class TestReporting:
 
     def test_heartbeat_to_json(self):
         """Test heartbeat JSON serialization."""
-        from squirt.reporting import generate_heartbeat
         import json
+
+        from squirt.reporting import generate_heartbeat
 
         @track(metrics=[m.runtime_ms.from_output("runtime")])
         def component() -> dict:
@@ -353,7 +353,7 @@ class TestInsights:
 
     def test_healthy_system_no_insights(self):
         """Test that healthy system generates no critical insights."""
-        from squirt.reporting import generate_heartbeat, InsightGenerator, Severity
+        from squirt.reporting import InsightGenerator, Severity, generate_heartbeat
 
         @track(
             metrics=[
@@ -379,7 +379,7 @@ class TestInsights:
 
     def test_low_accuracy_generates_insight(self):
         """Test that low accuracy generates critical insight."""
-        from squirt.reporting import generate_heartbeat, InsightGenerator, Severity
+        from squirt.reporting import InsightGenerator, Severity, generate_heartbeat
 
         @track(
             metrics=[
@@ -403,7 +403,7 @@ class TestInsights:
 
     def test_high_error_rate_generates_insight(self):
         """Test that high error rate generates critical insight."""
-        from squirt.reporting import generate_heartbeat, InsightGenerator, Severity
+        from squirt.reporting import InsightGenerator, Severity, generate_heartbeat
 
         @track(
             metrics=[
@@ -458,9 +458,10 @@ class TestMetricsClient:
 
     def test_client_basic(self):
         """Test basic client operations."""
+        import time
+
         from squirt import MetricsClient
         from squirt.core.types import MetricResult
-        import time
 
         client = MetricsClient()
 
@@ -482,9 +483,10 @@ class TestMetricsClient:
 
     def test_client_hierarchical_report(self):
         """Test hierarchical report generation."""
+        import time
+
         from squirt import MetricsClient
         from squirt.core.types import MetricResult
-        import time
 
         client = MetricsClient()
 

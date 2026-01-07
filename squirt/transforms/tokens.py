@@ -5,10 +5,10 @@ Extracts token usage metrics from LLM responses.
 Supports multiple SDK formats: OpenAI, Azure OpenAI, Anthropic.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 
-def token_count_transform(inputs: Dict[str, Any], output: Any) -> int:
+def token_count_transform(inputs: dict[str, Any], output: Any) -> int:
     """
     Extract total token count from output.
 
@@ -22,7 +22,7 @@ def token_count_transform(inputs: Dict[str, Any], output: Any) -> int:
     return 0
 
 
-def prompt_tokens_transform(inputs: Dict[str, Any], output: Any) -> int:
+def prompt_tokens_transform(inputs: dict[str, Any], output: Any) -> int:
     """
     Extract prompt/input token count.
 
@@ -39,7 +39,7 @@ def prompt_tokens_transform(inputs: Dict[str, Any], output: Any) -> int:
     return 0
 
 
-def completion_tokens_transform(inputs: Dict[str, Any], output: Any) -> int:
+def completion_tokens_transform(inputs: dict[str, Any], output: Any) -> int:
     """
     Extract completion/output token count.
 
@@ -56,7 +56,7 @@ def completion_tokens_transform(inputs: Dict[str, Any], output: Any) -> int:
     return 0
 
 
-def total_tokens_transform(inputs: Dict[str, Any], output: Any) -> int:
+def total_tokens_transform(inputs: dict[str, Any], output: Any) -> int:
     """
     Extract total token count from LLM response.
 

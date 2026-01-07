@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .aggregation import SystemHeartbeat
 
@@ -48,12 +48,12 @@ class Insight:
     title: str
     severity: Severity
     description: str
-    component: Optional[str] = None
-    likely_cause: Optional[str] = None
-    suggested_actions: List[str] = field(default_factory=list)
-    related_metrics: Dict[str, Any] = field(default_factory=dict)
+    component: str | None = None
+    likely_cause: str | None = None
+    suggested_actions: list[str] = field(default_factory=list)
+    related_metrics: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "title": self.title,
@@ -113,8 +113,8 @@ class InsightGenerator:
     def __init__(
         self,
         heartbeat: SystemHeartbeat,
-        history: Optional[List[Dict[str, Any]]] = None,
-        hierarchical_report: Optional[List[Dict[str, Any]]] = None,
+        history: list[dict[str, Any]] | None = None,
+        hierarchical_report: list[dict[str, Any]] | None = None,
     ):
         """
         Initialize the insight generator.
@@ -128,7 +128,7 @@ class InsightGenerator:
         self.history = history or []
         self.hierarchical_report = hierarchical_report or []
 
-    def analyze(self) -> List[Insight]:
+    def analyze(self) -> list[Insight]:
         """
         Analyze metrics and generate insights.
 
@@ -164,7 +164,7 @@ class InsightGenerator:
 
         return insights
 
-    def _check_accuracy(self) -> List[Insight]:
+    def _check_accuracy(self) -> list[Insight]:
         """Check accuracy metrics."""
         insights = []
 
@@ -212,7 +212,7 @@ class InsightGenerator:
 
         return insights
 
-    def _check_error_rate(self) -> List[Insight]:
+    def _check_error_rate(self) -> list[Insight]:
         """Check error rate metrics."""
         insights = []
         # Note: Metrics now have suffixes (e.g., error_rate.avg)
@@ -263,7 +263,7 @@ class InsightGenerator:
 
         return insights
 
-    def _check_performance(self) -> List[Insight]:
+    def _check_performance(self) -> list[Insight]:
         """Check performance metrics."""
         insights = []
         # Note: Metrics now have suffixes (e.g., runtime_ms.sum)
@@ -303,7 +303,7 @@ class InsightGenerator:
 
         return insights
 
-    def _check_memory(self) -> List[Insight]:
+    def _check_memory(self) -> list[Insight]:
         """Check memory usage metrics."""
         insights = []
         # Note: Metrics now have suffixes (e.g., memory_mb.max)
@@ -329,7 +329,7 @@ class InsightGenerator:
 
         return insights
 
-    def _check_components(self) -> List[Insight]:
+    def _check_components(self) -> list[Insight]:
         """Check component-level metrics for issues."""
         insights = []
 
@@ -375,8 +375,8 @@ class InsightGenerator:
 
 def generate_insight_report(
     heartbeat: SystemHeartbeat,
-    history: Optional[List[Dict[str, Any]]] = None,
-    hierarchical_report: Optional[List[Dict[str, Any]]] = None,
+    history: list[dict[str, Any]] | None = None,
+    hierarchical_report: list[dict[str, Any]] | None = None,
 ) -> str:
     """
     Generate a markdown insight report from a heartbeat.

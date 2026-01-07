@@ -27,30 +27,28 @@ Usage:
 """
 
 from .aggregation import (
-    # Core aggregation
-    aggregate_values,
-    aggregate_results,
-    generate_heartbeat,
-    # Graph-based aggregation
-    aggregate_metrics_from_graph,
-    generate_heartbeat_from_graph,
-    save_hierarchical_reports,
-    aggregate_by_system_metrics,
     # Data classes
     ComponentReport,
     SystemHeartbeat,
+    aggregate_by_system_metrics,
+    # Graph-based aggregation
+    aggregate_metrics_from_graph,
+    aggregate_results,
+    # Core aggregation
+    aggregate_values,
     # Analysis
     find_bottlenecks,
     find_underperforming_components,
+    generate_heartbeat,
+    generate_heartbeat_from_graph,
+    save_hierarchical_reports,
 )
-
 from .insights import (
-    Severity,
     Insight,
     InsightGenerator,
+    Severity,
     generate_insight_report,
 )
-
 from .reporter import MetricsReporter
 
 __all__ = [

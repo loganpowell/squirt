@@ -14,8 +14,7 @@ import tempfile
 import textwrap
 import time
 from pathlib import Path
-from typing import Any, Dict
-from unittest.mock import patch
+from typing import Any
 
 import pytest
 
@@ -29,18 +28,14 @@ from squirt import (
     configure_metrics,
     generate_heartbeat_from_graph,
     get_metrics_client,
-    get_test_context,
-    set_test_context,
     m,
+    set_test_context,
     track,
 )
 from squirt.analysis import (
-    DecoratedFunctionVisitor,
     DependencyGraph,
     DependencyGraphBuilder,
-    FunctionCallVisitor,
 )
-
 
 # =============================================================================
 # Test Fixtures
@@ -250,7 +245,7 @@ class TestTrackDecorator:
         configure_metrics(results_dir=str(temp_results_dir))
         set_test_context(test_case_id="transform_test")
 
-        def custom_transform(inputs: Dict, output: Any) -> float:
+        def custom_transform(inputs: dict, output: Any) -> float:
             return 0.87
 
         @track(
@@ -264,7 +259,7 @@ class TestTrackDecorator:
         test_function()
 
         # Check metric was recorded
-        client = get_metrics_client()
+        client = client = get_metrics_client()
         results = client.get_results("test_function")
         assert len(results["test_function"]) == 1
         assert results["test_function"][0].metrics["accuracy"] == 0.87
@@ -280,7 +275,7 @@ class TestTrackDecorator:
 
         captured_inputs = {}
 
-        def capture_transform(inputs: Dict, output: Any) -> float:
+        def capture_transform(inputs: dict, output: Any) -> float:
             captured_inputs.update(inputs)
             return 1.0
 
@@ -327,7 +322,7 @@ class TestTrackDecorator:
         configure_metrics(results_dir=str(temp_results_dir))
         set_test_context(test_case_id="exception_test")
 
-        def failing_transform(inputs: Dict, output: Any) -> float:
+        def failing_transform(inputs: dict, output: Any) -> float:
             raise ValueError("Transform failed!")
 
         @track(
@@ -344,7 +339,7 @@ class TestTrackDecorator:
         assert result is not None
 
         # Failing metric should be 0 (squirt v2 default), passing should be recorded
-        client = get_metrics_client()
+        client = client = get_metrics_client()
         results = client.get_results("test_function")
         assert results["test_function"][0].metrics["failing"] == 0
         assert results["test_function"][0].metrics["passing"] == 1.0
@@ -724,7 +719,7 @@ class TestAggregateMetricsFromGraph:
         with open(result_file, "w") as f:
             json.dump(result, f)
 
-        client = MetricsClient(results_dir=str(temp_results_dir))
+        MetricsClient(results_dir=str(temp_results_dir))
         heartbeat = aggregate_metrics_from_graph(
             graph=graph, results_dir=str(temp_results_dir), save_reports=False
         )
@@ -767,7 +762,7 @@ class TestAggregateMetricsFromGraph:
             with open(result_file, "w") as f:
                 json.dump(result, f)
 
-        client = MetricsClient(results_dir=str(temp_results_dir))
+        MetricsClient(results_dir=str(temp_results_dir))
         heartbeat = aggregate_metrics_from_graph(
             graph=graph, results_dir=str(temp_results_dir), save_reports=False
         )
@@ -810,7 +805,7 @@ class TestAggregateMetricsFromGraph:
             with open(result_file, "w") as f:
                 json.dump(result, f)
 
-        client = MetricsClient(results_dir=str(temp_results_dir))
+        MetricsClient(results_dir=str(temp_results_dir))
         heartbeat = aggregate_metrics_from_graph(
             graph=graph, results_dir=str(temp_results_dir), save_reports=False
         )
@@ -846,7 +841,7 @@ class TestAggregateMetricsFromGraph:
             with open(result_file, "w") as f:
                 json.dump(result, f)
 
-        client = MetricsClient(results_dir=str(temp_results_dir))
+        MetricsClient(results_dir=str(temp_results_dir))
         heartbeat = aggregate_metrics_from_graph(
             graph=graph, results_dir=str(temp_results_dir), save_reports=False
         )
@@ -955,7 +950,7 @@ class TestGenerateHeartbeat:
         with open(result_file, "w") as f:
             json.dump(result, f)
 
-        client = MetricsClient(results_dir=str(temp_results_dir))
+        MetricsClient(results_dir=str(temp_results_dir))
         heartbeat = generate_heartbeat_from_graph(
             graph=graph, results_dir=str(temp_results_dir)
         )
@@ -981,7 +976,7 @@ class TestGenerateHeartbeat:
         with open(result_file, "w") as f:
             json.dump(result, f)
 
-        client = MetricsClient(results_dir=str(temp_results_dir))
+        MetricsClient(results_dir=str(temp_results_dir))
         generate_heartbeat_from_graph(graph=graph, results_dir=str(temp_results_dir))
 
         heartbeat_file = temp_results_dir / "system_heartbeat.json"
@@ -1024,7 +1019,7 @@ class TestFullMetricsFlow:
         graph = DependencyGraph()
         graph.add_node("test_component")
 
-        client = get_metrics_client()
+        # client = get_metrics_client()
         heartbeat = generate_heartbeat_from_graph(
             graph=graph, results_dir=str(temp_results_dir)
         )
@@ -1066,7 +1061,7 @@ class TestFullMetricsFlow:
         graph.add_node("child_component")
         graph.add_edge("parent_component", "child_component")
 
-        client = get_metrics_client()
+        # client = get_metrics_client()
         heartbeat = generate_heartbeat_from_graph(
             graph=graph, results_dir=str(temp_results_dir)
         )

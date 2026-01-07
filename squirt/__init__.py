@@ -33,22 +33,27 @@ Plugin Usage:
         ...
 """
 
-from pathlib import Path
-from typing import Optional, Union
 import contextvars
+from pathlib import Path
+from typing import Optional
 
+from .categories.system import SystemMetric
+from .core.decorator import (
+    configure_expectations,
+    get_expectations,
+    get_test_context,
+    set_test_context,
+    track,
+)
 from .core.types import (
     AggregationType,
     Metric,
     MetricResult,
 )
-from .categories.system import SystemMetric
-from .core.decorator import (
-    track,
-    configure_expectations,
-    get_expectations,
-    set_test_context,
-    get_test_context,
+from .filters import (
+    only_namespaces,
+    skip_namespaces,
+    when_env,
 )
 
 # Import m from the typed module for IDE support
@@ -69,9 +74,9 @@ _config: contextvars.ContextVar[dict] = contextvars.ContextVar(
 
 
 def configure(
-    results_dir: Optional[Union[str, Path]] = None,
-    history_dir: Optional[Union[str, Path]] = None,
-    expectations_file: Optional[Union[str, Path]] = None,
+    results_dir: str | Path | None = None,
+    history_dir: str | Path | None = None,
+    expectations_file: str | Path | None = None,
 ) -> None:
     """
     Configure squirt settings.
@@ -119,8 +124,8 @@ _metrics_client: contextvars.ContextVar[Optional["MetricsClient"]] = (
 
 def configure_metrics(
     results_dir: str = "tests/results",
-    history_dir: Optional[str] = None,
-    expectations_path: Optional[str] = None,
+    history_dir: str | None = None,
+    expectations_path: str | None = None,
     persist: bool = True,
 ) -> "MetricsClient":
     """
@@ -168,36 +173,6 @@ def get_metrics_client() -> "MetricsClient":
 
 
 # Import optional components for export
-from .client import MetricsClient
-from .extensions import register_aggregation, register_system_metric
-
-# Import category helpers
-from .categories import (
-    SystemMetric,
-    INVERTED_METRICS,
-    get_aggregation_type,
-    should_invert,
-)
-
-# Import reporting components
-from .reporting import (
-    aggregate_values,
-    aggregate_results,
-    generate_heartbeat,
-    aggregate_metrics_from_graph,
-    generate_heartbeat_from_graph,
-    save_hierarchical_reports,
-    aggregate_by_system_metrics,
-    find_bottlenecks,
-    find_underperforming_components,
-    ComponentReport,
-    SystemHeartbeat,
-    Severity,
-    Insight,
-    InsightGenerator,
-    generate_insight_report,
-)
-
 # Import analysis components
 from .analysis import (
     DependencyGraphBuilder,
@@ -205,6 +180,33 @@ from .analysis import (
     visualize_graph,
 )
 
+# Import category helpers
+from .categories import (
+    INVERTED_METRICS,
+    get_aggregation_type,
+    should_invert,
+)
+from .client import MetricsClient
+from .extensions import register_aggregation, register_system_metric
+
+# Import reporting components
+from .reporting import (
+    ComponentReport,
+    Insight,
+    InsightGenerator,
+    Severity,
+    SystemHeartbeat,
+    aggregate_by_system_metrics,
+    aggregate_metrics_from_graph,
+    aggregate_results,
+    aggregate_values,
+    find_bottlenecks,
+    find_underperforming_components,
+    generate_heartbeat,
+    generate_heartbeat_from_graph,
+    generate_insight_report,
+    save_hierarchical_reports,
+)
 
 __all__ = [
     # Core API
@@ -218,6 +220,10 @@ __all__ = [
     "get_metrics_client",
     "set_test_context",
     "get_test_context",
+    # Filters
+    "skip_namespaces",
+    "only_namespaces",
+    "when_env",
     # Client
     "MetricsClient",
     # Extensions

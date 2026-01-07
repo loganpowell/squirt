@@ -5,8 +5,8 @@ Calculate LLM API costs from token usage.
 Supports multiple providers with model-specific pricing.
 """
 
-from typing import Any, Callable, Dict, Optional
-
+from collections.abc import Callable
+from typing import Any
 
 # Model-specific pricing (per million tokens) - Updated December 2024
 MODEL_PRICING = {
@@ -51,7 +51,7 @@ def get_model_pricing(model: str) -> tuple[float, float]:
     return (30.0, 60.0)
 
 
-def token_cost_transform(inputs: Dict[str, Any], output: Any) -> float:
+def token_cost_transform(inputs: dict[str, Any], output: Any) -> float:
     """
     Calculate LLM API cost from token usage.
 
@@ -88,8 +88,8 @@ def token_cost_transform(inputs: Dict[str, Any], output: Any) -> float:
 def create_token_cost_transform(
     input_cost_per_1k: float = 0.00003,
     output_cost_per_1k: float = 0.00006,
-    model: Optional[str] = None,
-) -> Callable[[Dict[str, Any], Any], float]:
+    model: str | None = None,
+) -> Callable[[dict[str, Any], Any], float]:
     """
     Factory to create a token cost transform with custom pricing.
 
@@ -112,7 +112,7 @@ def create_token_cost_transform(
         gpt4_cost = create_token_cost_transform(model="gpt-4o")
     """
 
-    def transform(inputs: Dict[str, Any], output: Any) -> float:
+    def transform(inputs: dict[str, Any], output: Any) -> float:
         if not isinstance(output, dict):
             return 0.0
 

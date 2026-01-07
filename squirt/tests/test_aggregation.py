@@ -5,16 +5,13 @@ Tests the aggregation logic including system metric aggregation,
 metric inversion, and percentile calculations.
 """
 
+
 import pytest
-from typing import Dict, List, Any
 
 from squirt import (
-    aggregate_values,
-    aggregate_by_system_metrics,
-    generate_heartbeat,
     AggregationType,
-    MetricResult,
-    SystemMetric,
+    aggregate_by_system_metrics,
+    aggregate_values,
 )
 
 

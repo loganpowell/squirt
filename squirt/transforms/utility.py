@@ -4,10 +4,11 @@ Utility Transform Functions
 General-purpose transforms for testing and custom logic.
 """
 
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 
 
-def always_pass_transform(inputs: Dict[str, Any], output: Any) -> bool:
+def always_pass_transform(inputs: dict[str, Any], output: Any) -> bool:
     """
     Always returns True.
 
@@ -16,7 +17,7 @@ def always_pass_transform(inputs: Dict[str, Any], output: Any) -> bool:
     return True
 
 
-def always_fail_transform(inputs: Dict[str, Any], output: Any) -> bool:
+def always_fail_transform(inputs: dict[str, Any], output: Any) -> bool:
     """
     Always returns False.
 
@@ -25,7 +26,7 @@ def always_fail_transform(inputs: Dict[str, Any], output: Any) -> bool:
     return False
 
 
-def output_length_transform(inputs: Dict[str, Any], output: Any) -> int:
+def output_length_transform(inputs: dict[str, Any], output: Any) -> int:
     """
     Return length of output.
 
@@ -44,10 +45,10 @@ def output_length_transform(inputs: Dict[str, Any], output: Any) -> int:
 
 
 def create_threshold_transform(
-    value_extractor: Callable[[Dict[str, Any], Any], float],
+    value_extractor: Callable[[dict[str, Any], Any], float],
     threshold: float,
     above: bool = True,
-) -> Callable[[Dict[str, Any], Any], bool]:
+) -> Callable[[dict[str, Any], Any], bool]:
     """
     Factory to create a threshold-based transform.
 
@@ -68,7 +69,7 @@ def create_threshold_transform(
         )
     """
 
-    def transform(inputs: Dict[str, Any], output: Any) -> bool:
+    def transform(inputs: dict[str, Any], output: Any) -> bool:
         value = value_extractor(inputs, output)
         if above:
             return value >= threshold

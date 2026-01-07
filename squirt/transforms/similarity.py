@@ -4,7 +4,8 @@ Similarity Transform Functions
 Compare outputs to expected values with similarity scoring.
 """
 
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 
 def compute_similarity(expected: Any, actual: Any, depth: int = 0) -> float:
@@ -87,7 +88,7 @@ def compute_similarity(expected: Any, actual: Any, depth: int = 0) -> float:
     return 0.0
 
 
-def expected_match_transform(inputs: Dict[str, Any], output: Any) -> float:
+def expected_match_transform(inputs: dict[str, Any], output: Any) -> float:
     """
     Compare output to expected data from inputs.
 
@@ -105,9 +106,9 @@ def expected_match_transform(inputs: Dict[str, Any], output: Any) -> float:
 
 def create_expected_match_transform(
     expected_key: str = "expected",
-    output_key: Optional[str] = None,
+    output_key: str | None = None,
     exact: bool = False,
-) -> Callable[[Dict[str, Any], Any], float]:
+) -> Callable[[dict[str, Any], Any], float]:
     """
     Factory to create an expected match transform.
 
@@ -132,7 +133,7 @@ def create_expected_match_transform(
             ...
     """
 
-    def transform(inputs: Dict[str, Any], output: Any) -> float:
+    def transform(inputs: dict[str, Any], output: Any) -> float:
         expected = inputs.get(expected_key)
         if expected is None:
             return 1.0  # No expected data, assume pass

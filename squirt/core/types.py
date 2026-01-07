@@ -7,10 +7,11 @@ This module provides the fundamental types used throughout the library:
 - MetricResult: Result of metric collection
 """
 
+import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, Optional, Union
-import uuid
+from typing import Any
 
 
 class AggregationType(Enum):
@@ -38,16 +39,18 @@ class Metric:
         failure_threshold: Optional threshold below which metric is considered a failure
         is_assertion: If True, raises pytest assertion error on failure (for blocking PRs)
         system_metric: Optional system-level metric this component metric maps to
+        _namespace: Optional reference to the namespace this metric belongs to (for filtering)
     """
 
     name: str
-    transform: Callable[[Dict[str, Any], Any], Union[float, int, bool]]
+    transform: Callable[[dict[str, Any], Any], float | int | bool]
     agg: AggregationType
-    failure_threshold: Optional[Union[float, int]] = None
+    failure_threshold: float | int | None = None
     is_assertion: bool = False
-    system_metric: Optional[Any] = (
+    system_metric: Any | None = (
         None  # SystemMetric enum (Optional to avoid circular import)
     )
+    _namespace: Any | None = None  # Reference to MetricNamespace for filtering
 
 
 @dataclass
@@ -56,13 +59,13 @@ class MetricResult:
 
     component: str
     test_case_id: str
-    metrics: Dict[str, Union[float, int, bool]]
-    aggregation_types: Dict[str, str]
-    inputs: Dict[str, Any]
+    metrics: dict[str, float | int | bool]
+    aggregation_types: dict[str, str]
+    inputs: dict[str, Any]
     output: Any
     timestamp: float
     execution_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    system_metric_map: Dict[str, str] = field(default_factory=dict)
+    system_metric_map: dict[str, str] = field(default_factory=dict)
 
 
 __all__ = [

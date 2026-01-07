@@ -5,9 +5,10 @@ This tests that error_free and other assertion metrics properly fail tests
 when they detect errors in actual pipeline components.
 """
 
+
 import pytest
-from pathlib import Path
-from squirt import configure_expectations, set_test_context, m, track
+
+from squirt import m, set_test_context, track
 from squirt.core.decorator import clear_results, get_results
 
 

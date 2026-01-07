@@ -7,7 +7,6 @@ critical metrics indicate errors, preventing bad code from being merged.
 
 from squirt import m, track
 
-
 # Example 1: Structure validation that blocks PRs
 # ================================================
 

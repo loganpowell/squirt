@@ -16,10 +16,10 @@ Usage:
         ...
 """
 
-from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
+from squirt.plugins import AggregationType, MetricBuilder, MetricNamespace
 
 
-class DataMetrics:
+class DataMetrics(MetricNamespace):
     """
     Metrics for analyzing structured data output.
 
@@ -28,27 +28,34 @@ class DataMetrics:
     - Nesting depth
     - Validation status
     - Match accuracy
-
-    All attributes have explicit type annotations for IDE autocomplete support.
     """
 
-    field_count: MetricBuilder = MetricBuilder(
-        "field_count",
-        AggregationType.SUM,
-        description="Number of fields/keys in output structure",
-    )
+    @property
+    def field_count(self) -> MetricBuilder:
+        """Number of fields/keys in output structure."""
+        return self._define(
+            "field_count",
+            AggregationType.SUM,
+            description="Number of fields/keys in output structure",
+        )
 
-    nesting_depth: MetricBuilder = MetricBuilder(
-        "nesting_depth",
-        AggregationType.MAX,
-        description="Maximum nesting depth of output structure",
-    )
+    @property
+    def nesting_depth(self) -> MetricBuilder:
+        """Maximum nesting depth of output structure."""
+        return self._define(
+            "nesting_depth",
+            AggregationType.MAX,
+            description="Maximum nesting depth of output structure",
+        )
 
-    node_count: MetricBuilder = MetricBuilder(
-        "node_count",
-        AggregationType.SUM,
-        description="Number of nodes in tree structure",
-    )
+    @property
+    def node_count(self) -> MetricBuilder:
+        """Number of nodes in tree structure."""
+        return self._define(
+            "node_count",
+            AggregationType.SUM,
+            description="Number of nodes in tree structure",
+        )
 
     # Validation/accuracy metrics (implementation-specific)
     # Projects should define domain-specific validation metrics:

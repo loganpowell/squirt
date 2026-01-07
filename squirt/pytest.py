@@ -26,7 +26,7 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 # Module-level Configuration
 # =============================================================================
 
-_squirt_config: Dict[str, Any] = {
+_squirt_config: dict[str, Any] = {
     "results_dir": None,
     "history_dir": None,
     "default_source": None,
@@ -51,19 +51,19 @@ _squirt_config: Dict[str, Any] = {
 }
 
 # Dependency graph built at session start for parent-child detection
-_dependency_graph: Optional[Any] = None
+_dependency_graph: Any | None = None
 
 
-def get_dependency_graph() -> Optional[Any]:
+def get_dependency_graph() -> Any | None:
     """Get the dependency graph built at session start."""
     return _dependency_graph
 
 
 def configure_squirt(
-    results_dir: Optional[Union[str, Path]] = None,
-    history_dir: Optional[Union[str, Path]] = None,
-    default_source: Optional[Union[str, Path]] = None,
-    instrumented_dir: Optional[Union[str, Path]] = None,
+    results_dir: str | Path | None = None,
+    history_dir: str | Path | None = None,
+    default_source: str | Path | None = None,
+    instrumented_dir: str | Path | None = None,
     auto_heartbeat: bool = True,
     verbose: bool = True,
 ) -> None:
@@ -110,7 +110,7 @@ def configure_squirt(
 # Session State
 # =============================================================================
 
-_session_results: List[MetricResult] = []
+_session_results: list[MetricResult] = []
 _session_start_time: float = 0.0
 _executed_components: set = set()
 
@@ -120,7 +120,7 @@ _executed_components: set = set()
 # =============================================================================
 
 
-def pytest_addoption(parser: "Parser") -> None:
+def pytest_addoption(parser: Parser) -> None:
     """Add squirt command-line options."""
     group = parser.getgroup("squirt", "Squirt metrics collection")
     group.addoption(
@@ -147,9 +147,21 @@ def pytest_addoption(parser: "Parser") -> None:
         default=None,
         help="Path to expectations.json file",
     )
+    group.addoption(
+        "--skip-metrics-namespaces",
+        action="store",
+        default=None,
+        help="Comma-separated list of metric namespaces to skip (e.g., 'llm,vector')",
+    )
+    group.addoption(
+        "--only-metrics-namespaces",
+        action="store",
+        default=None,
+        help="Comma-separated list of metric namespaces to include exclusively (e.g., 'm,data')",
+    )
 
 
-def pytest_configure(config: "Config") -> None:
+def pytest_configure(config: Config) -> None:
     """Configure squirt based on pytest options and module config."""
     # Skip if metrics disabled
     if config.getoption("--no-metrics", default=False):
@@ -181,6 +193,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
         return
 
     from . import configure, configure_expectations, configure_metrics
+    from .filters import configure_namespace_filters
 
     # Resolve paths - try to find tests directory
     tests_dir = _find_tests_dir(session.config.rootdir)  # type: ignore[attr-defined]
@@ -199,6 +212,21 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     # Clean up old test result files to prevent duplicate entries
     if results_dir and Path(results_dir).exists():
         _cleanup_old_results(Path(results_dir))
+
+    # Configure namespace filtering from CLI options
+    skip_namespaces = session.config.getoption("--skip-metrics-namespaces")
+    only_namespaces = session.config.getoption("--only-metrics-namespaces")
+
+    if skip_namespaces or only_namespaces:
+        configure_namespace_filters(
+            skip=skip_namespaces.split(",") if skip_namespaces else None,
+            only=only_namespaces.split(",") if only_namespaces else None,
+        )
+        if _squirt_config.get("verbose", True):
+            if skip_namespaces:
+                print(f"   Skipping namespaces: {skip_namespaces}")
+            if only_namespaces:
+                print(f"   Only collecting from: {only_namespaces}")
 
     # Configure squirt core AND initialize MetricsClient
     configure(
@@ -220,11 +248,11 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     if expectations_path and expectations_path.exists():
         configure_expectations(path=expectations_path)
         if _squirt_config.get("verbose", True):
-            print(f"\n📊 Squirt configured")
+            print("\n📊 Squirt configured")
             print(f"   Results: {results_dir}")
             print(f"   Expectations: {expectations_path}")
     elif _squirt_config.get("verbose", True):
-        print(f"\n📊 Squirt configured (no expectations file)")
+        print("\n📊 Squirt configured (no expectations file)")
         print(f"   Results: {results_dir}")
 
 
@@ -283,7 +311,7 @@ class InstrumentedFile(pytest.File):
                         )
                         if callable(attr) and is_tracked:
                             components[attr_name] = attr
-        except Exception as e:
+        except Exception:
             # Skip files that fail to import
             return []
 
@@ -320,7 +348,7 @@ class InstrumentedFile(pytest.File):
                             component_expectations = [source_data]
                         else:
                             component_expectations = []
-                    except Exception as e:
+                    except Exception:
                         # Failed to load source, skip this component
                         component_expectations = []
                 else:
@@ -374,8 +402,9 @@ class InstrumentedItem(pytest.Item):
 
     def runtest(self):
         """Run the instrumented component with the test case."""
-        from . import set_test_context
         import inspect
+
+        from . import set_test_context
 
         if self.test_case:
             # Set up expectations context
@@ -487,7 +516,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
 
         if not roots_executed:
             if _squirt_config.get("verbose", True):
-                print(f"\n📊 No root components ran - skipping heartbeat")
+                print("\n📊 No root components ran - skipping heartbeat")
             return
 
         # Get components with results
@@ -557,7 +586,7 @@ def metrics_client():
 
 
 @pytest.fixture(scope="session")
-def expectations_data() -> List[Dict[str, Any]]:
+def expectations_data() -> list[dict[str, Any]]:
     """Load expectations data from the configured file."""
     from . import get_expectations
 
@@ -599,7 +628,7 @@ def set_context():
     """
     from . import set_test_context
 
-    def _set_context(expectations: Dict[str, Any], test_case_id: Optional[str] = None):
+    def _set_context(expectations: dict[str, Any], test_case_id: str | None = None):
         final_id = test_case_id or expectations.get("id", "unknown")
         set_test_context(test_case_id=final_id, expectations=expectations)
 
@@ -611,7 +640,7 @@ def set_context():
 # =============================================================================
 
 
-def _find_tests_dir(rootdir) -> Optional[Path]:
+def _find_tests_dir(rootdir) -> Path | None:
     """Find the tests directory relative to rootdir."""
     # Convert to pathlib.Path if needed (pytest uses py.path.local)
     rootdir = Path(str(rootdir))
@@ -643,8 +672,8 @@ def _cleanup_old_results(results_dir: Path) -> None:
 
 
 def _resolve_expectations_path(
-    config: "Config", tests_dir: Optional[Path]
-) -> Optional[Path]:
+    config: Config, tests_dir: Path | None
+) -> Path | None:
     """Resolve default source file path from various sources."""
     # 1. CLI option (legacy support)
     cli_path = config.getoption("--squirt-expectations", default=None)
@@ -680,7 +709,7 @@ def add_result(result: MetricResult) -> None:
     _session_results.append(result)
 
 
-def get_session_results() -> List[MetricResult]:
+def get_session_results() -> list[MetricResult]:
     """Get all results from the current session."""
     return _session_results.copy()
 

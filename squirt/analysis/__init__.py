@@ -22,12 +22,12 @@ Usage:
 """
 
 from .graph_builder import (
-    FunctionCallVisitor,
     DecoratedFunctionVisitor,
     DependencyGraph,
     DependencyGraphBuilder,
-    visualize_graph,
+    FunctionCallVisitor,
     analyze_codebase,
+    visualize_graph,
 )
 
 __all__ = [

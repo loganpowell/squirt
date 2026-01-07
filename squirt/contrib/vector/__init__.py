@@ -14,6 +14,6 @@ Usage:
         ...
 """
 
-from .metrics import vector, VectorMetrics
+from .metrics import VectorMetrics, vector
 
 __all__ = ["vector", "VectorMetrics"]

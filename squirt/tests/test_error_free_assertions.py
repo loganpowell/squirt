@@ -3,7 +3,8 @@ Test that error_free automatically fails tests when errors occur.
 """
 
 import pytest
-from squirt import m, track, configure_metrics, set_test_context
+
+from squirt import configure_metrics, m, set_test_context, track
 from squirt.core.decorator import clear_results
 
 

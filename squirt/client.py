@@ -28,7 +28,7 @@ import time
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from .core.types import MetricResult
 from .reporting.aggregation import (
@@ -39,7 +39,7 @@ from .reporting.aggregation import (
 )
 
 
-def _get_git_info() -> Dict[str, str]:
+def _get_git_info() -> dict[str, str]:
     """Get current git commit and branch."""
     info = {"commit": "unknown", "branch": "unknown"}
     try:
@@ -79,9 +79,9 @@ class MetricsClient:
 
     def __init__(
         self,
-        results_dir: Optional[Union[str, Path]] = None,
-        history_dir: Optional[Union[str, Path]] = None,
-        persist: Optional[bool] = None,
+        results_dir: str | Path | None = None,
+        history_dir: str | Path | None = None,
+        persist: bool | None = None,
     ):
         """
         Initialize the metrics client.
@@ -103,7 +103,7 @@ class MetricsClient:
         )
         # Default persist=True if results_dir was explicitly provided
         self.persist = persist if persist is not None else (results_dir is not None)
-        self.results: List[MetricResult] = []
+        self.results: list[MetricResult] = []
         self._session_id = str(uuid.uuid4())
         self.start_time = time.time()
 
@@ -132,7 +132,7 @@ class MetricsClient:
         """
         self.record_result(result)
 
-    def add_results(self, results: List[MetricResult]) -> None:
+    def add_results(self, results: list[MetricResult]) -> None:
         """
         Add multiple metric results.
 
@@ -149,7 +149,7 @@ class MetricsClient:
         # Read existing data if file exists
         if result_file.exists():
             try:
-                with open(result_file, "r") as f:
+                with open(result_file) as f:
                     data = json.load(f)
             except (json.JSONDecodeError, KeyError):
                 # If file is corrupted, start fresh
@@ -185,8 +185,8 @@ class MetricsClient:
             json.dump(data, f, indent=2)
 
     def get_results(
-        self, component: Optional[str] = None
-    ) -> Dict[str, List[MetricResult]]:
+        self, component: str | None = None
+    ) -> dict[str, list[MetricResult]]:
         """
         Get results, optionally filtered by component.
 
@@ -201,7 +201,7 @@ class MetricsClient:
             return {component: filtered}
 
         # Group by component
-        by_component: Dict[str, List[MetricResult]] = {}
+        by_component: dict[str, list[MetricResult]] = {}
         for result in self.results:
             if result.component not in by_component:
                 by_component[result.component] = []
@@ -221,7 +221,7 @@ class MetricsClient:
         """
         return generate_heartbeat(self.results)
 
-    def generate_hierarchical_report(self) -> List[Dict[str, Any]]:
+    def generate_hierarchical_report(self) -> list[dict[str, Any]]:
         """
         Generate a hierarchical component report.
 
@@ -229,7 +229,7 @@ class MetricsClient:
             List of component reports with parent-child relationships
         """
         # Group by component
-        by_component: Dict[str, List[MetricResult]] = {}
+        by_component: dict[str, list[MetricResult]] = {}
         for result in self.results:
             if result.component not in by_component:
                 by_component[result.component] = []
@@ -256,7 +256,7 @@ class MetricsClient:
 
         return reports
 
-    def generate_reports(self) -> Dict[str, str]:
+    def generate_reports(self) -> dict[str, str]:
         """
         Generate all reports and save to disk.
 

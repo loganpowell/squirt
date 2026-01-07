@@ -20,11 +20,9 @@ Usage:
         ...
 """
 
-from typing import Optional
-
-from .plugins.base import MetricBuilder, MetricNamespace
-from .core.types import AggregationType
 from .categories.system import SystemMetric
+from .core.types import AggregationType
+from .plugins.base import MetricBuilder, MetricNamespace
 
 
 class BuiltinMetrics(MetricNamespace):
@@ -91,11 +89,21 @@ class BuiltinMetrics(MetricNamespace):
             description="Accuracy against expected output",
         )
 
+    @property
+    def assert_passes(self) -> MetricBuilder:
+        """Assert metric passes threshold, fail test otherwise."""
+        return self._define(
+            name="assert_passes",
+            aggregation=AggregationType.FAILURE,
+            system_metric=SystemMetric.ERROR_RATE,
+            description="Assert metric passes threshold, fail test otherwise",
+        )
+
     def custom(
         self,
         name: str,
         aggregation: AggregationType = AggregationType.AVERAGE,
-        system_metric: Optional[SystemMetric] = None,
+        system_metric: SystemMetric | None = None,
         description: str = "",
     ) -> MetricBuilder:
         """

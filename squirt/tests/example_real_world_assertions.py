@@ -6,8 +6,6 @@ to block PRs when quality falls below thresholds.
 """
 
 from squirt import m, track
-from squirt.contrib.data import data
-
 
 # BEFORE: Component with regular metrics only
 # ============================================

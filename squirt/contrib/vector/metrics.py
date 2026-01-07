@@ -14,68 +14,78 @@ Usage:
         ...
 """
 
-from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
+from squirt.plugins import AggregationType, MetricBuilder, MetricNamespace, SystemMetric
 
 
-class VectorMetrics:
+class VectorMetrics(MetricNamespace):
     """
     Metrics for embedding and vector search operations.
 
     Tracks similarity scores, search quality, embedding characteristics.
-    All attributes have explicit type annotations for IDE autocomplete support.
     """
 
-    # Similarity metrics
-    top_similarity: MetricBuilder = MetricBuilder(
-        "top_similarity",
-        AggregationType.AVERAGE,
-        SystemMetric.ACCURACY,
-        description="Top similarity score from search (0.0-1.0)",
-    )
+    @property
+    def top_similarity(self) -> MetricBuilder:
+        """Top similarity score from search (0.0-1.0)."""
+        return self._define(
+            "top_similarity",
+            system_metric=SystemMetric.ACCURACY,
+            description="Top similarity score from search (0.0-1.0)",
+        )
 
-    avg_similarity: MetricBuilder = MetricBuilder(
-        "avg_similarity",
-        AggregationType.AVERAGE,
-        SystemMetric.ACCURACY,
-        description="Average similarity score across results",
-    )
+    @property
+    def avg_similarity(self) -> MetricBuilder:
+        """Average similarity score across results."""
+        return self._define(
+            "avg_similarity",
+            system_metric=SystemMetric.ACCURACY,
+            description="Average similarity score across results",
+        )
 
-    # Search quality metrics (implementation-specific: hit_rate, accuracy, mrr)
-    # Users should define these in their project metrics based on their search semantics
+    @property
+    def search_latency(self) -> MetricBuilder:
+        """Time to perform vector search (ms)."""
+        return self._define(
+            "search_latency_ms",
+            system_metric=SystemMetric.LATENCY_P95,
+            description="Time to perform vector search (ms)",
+        )
 
-    # Performance metrics
-    search_latency: MetricBuilder = MetricBuilder(
-        "search_latency_ms",
-        AggregationType.AVERAGE,
-        SystemMetric.LATENCY_P95,
-        description="Time to perform vector search (ms)",
-    )
+    @property
+    def embedding_latency(self) -> MetricBuilder:
+        """Time to generate embeddings (ms)."""
+        return self._define(
+            "embedding_latency_ms",
+            system_metric=SystemMetric.LATENCY_P95,
+            description="Time to generate embeddings (ms)",
+        )
 
-    embedding_latency: MetricBuilder = MetricBuilder(
-        "embedding_latency_ms",
-        AggregationType.AVERAGE,
-        SystemMetric.LATENCY_P95,
-        description="Time to generate embeddings (ms)",
-    )
+    @property
+    def embedding_dimension(self) -> MetricBuilder:
+        """Dimension of embedding vectors."""
+        return self._define(
+            "embedding_dimension",
+            aggregation=AggregationType.AVERAGE,
+            description="Dimension of embedding vectors",
+        )
 
-    # Embedding characteristics
-    embedding_dimension: MetricBuilder = MetricBuilder(
-        "embedding_dimension",
-        AggregationType.AVERAGE,
-        description="Dimension of embedding vectors",
-    )
+    @property
+    def vectors_indexed(self) -> MetricBuilder:
+        """Number of vectors in index."""
+        return self._define(
+            "vectors_indexed",
+            aggregation=AggregationType.SUM,
+            description="Number of vectors in index",
+        )
 
-    vectors_indexed: MetricBuilder = MetricBuilder(
-        "vectors_indexed",
-        AggregationType.SUM,
-        description="Number of vectors in index",
-    )
-
-    results_returned: MetricBuilder = MetricBuilder(
-        "results_returned",
-        AggregationType.AVERAGE,
-        description="Number of results returned by search",
-    )
+    @property
+    def results_returned(self) -> MetricBuilder:
+        """Number of results returned by search."""
+        return self._define(
+            "results_returned",
+            aggregation=AggregationType.AVERAGE,
+            description="Number of results returned by search",
+        )
 
 
 # Singleton instance

@@ -4,10 +4,10 @@ Runtime Transform Functions
 Extracts runtime metrics from component outputs.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 
-def runtime_transform(inputs: Dict[str, Any], output: Any) -> int:
+def runtime_transform(inputs: dict[str, Any], output: Any) -> int:
     """
     Extract runtime in milliseconds from output metadata.
 
@@ -21,7 +21,7 @@ def runtime_transform(inputs: Dict[str, Any], output: Any) -> int:
     return 0
 
 
-def runtime_from_metadata(inputs: Dict[str, Any], output: Any) -> int:
+def runtime_from_metadata(inputs: dict[str, Any], output: Any) -> int:
     """
     Alias for runtime_transform.
 

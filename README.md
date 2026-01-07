@@ -104,6 +104,12 @@ pytest --no-metrics tests/
 
 # Custom results directory
 pytest --metrics-dir ./custom/results tests/
+
+# Skip expensive metric namespaces (e.g., for CI)
+pytest --skip-metrics-namespaces=llm,vector tests/
+
+# Only collect specific metric namespaces
+pytest --only-metrics-namespaces=m tests/
 ```
 
 ### Provided Fixtures
@@ -146,7 +152,6 @@ _my_component_metrics = [
     m.expected_match.compare_to_expected("data", "result"),
     m.structure_valid.compute(my_validation_fn),
     m.error_free.compute(error_check_fn),
-    llm.completeness.evaluate(completeness_eval),
 ]
 
 @track(metrics=_my_component_metrics)
@@ -160,56 +165,176 @@ def my_component(text: str) -> dict:
     m.expected_match.compare_to_expected("data", "result"),
     m.structure_valid.compute(my_validation_fn),
     m.error_free.compute(error_check_fn),
-    llm.completeness.evaluate(completeness_eval),
 ])
 def my_component(text: str) -> dict:
     ...
 ```
 
-### Creating Custom Plugins
+## Filtering Metrics by Namespace
 
-Use `MetricBuilder` with explicit type annotations for full IDE support:
+Squirt provides flexible runtime filtering to conditionally include or exclude metrics by namespace - perfect for:
 
-```python
-from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
+- **CI optimization** - Skip expensive LLM/API metrics to speed up tests
+- **Environment control** - Enable debug metrics only in development
+- **Test isolation** - Exclude external service calls in unit tests
 
-class MyDomainMetrics:
-    """Custom metrics for my domain."""
+### Runtime Filtering (Recommended)
 
-    # System metric - auto-derives AVERAGE aggregation
-    field_accuracy: MetricBuilder = MetricBuilder(
-        "field_accuracy",
-        system_metric=SystemMetric.ACCURACY,
-        description="Per-field accuracy score",
-    )
+**Use pytest flags to filter at test time** - no code changes needed:
 
-    # System metric with inversion
-    validation_passed: MetricBuilder = MetricBuilder(
-        "validation_passed",
-        system_metric=SystemMetric.ERROR_RATE,
-        inverted=True,
-        description="Whether validation passed",
-    )
+```bash
+# Skip expensive LLM metrics in CI
+pytest tests/ --skip-metrics-namespaces=llm,vector
 
-    # Non-system metric - must specify aggregation
-    field_count: MetricBuilder = MetricBuilder(
-        "field_count",
-        aggregation=AggregationType.AVERAGE,
-        description="Average field count per document",
-    )
+# Only collect core built-in metrics
+pytest tests/ --only-metrics-namespaces=m
 
-# Create singleton instance
-my_domain = MyDomainMetrics()
-
-# Usage: my_domain.field_accuracy.from_output("score")
+# Skip multiple namespaces
+pytest tests/ --skip-metrics-namespaces=llm,vector,data
 ```
 
-Key points for plugin authors:
+Your decorators stay the same regardless of environment:
 
-1. Use plain classes (no inheritance needed)
-2. Add explicit `MetricBuilder` type annotations to all attributes
-3. Use `MetricBuilder()` directly (preferred) or the `custom()` factory
-4. Export a singleton instance
+```python
+from squirt import m, track
+from squirt.contrib.llm import llm
+
+# Define all metrics - filtering happens at runtime based on pytest flags
+@track(metrics=[
+    m.runtime_ms.from_output("metadata.runtime_ms"),
+    m.expected_match.compute(accuracy_fn),
+    llm.cost.from_output("usage.cost"),  # Skipped when --skip-metrics-namespaces=llm
+    llm.total_tokens.from_output("usage.tokens"),  # Skipped when --skip-metrics-namespaces=llm
+])
+def my_component(text: str) -> dict:
+    ...
+```
+
+**In GitHub Actions:**
+
+```yaml
+- name: Run Tests (skip expensive metrics)
+  run: pytest tests/ --skip-metrics-namespaces=llm,vector
+```
+
+### Manual Filtering (Advanced)
+
+For programmatic control, use the filter functions directly:
+
+```python
+from squirt import m, track
+from squirt.filters import skip_namespaces, only_namespaces
+from squirt.contrib.llm import llm
+
+# Skip specific namespaces
+metrics = skip_namespaces([llm], [
+    m.runtime_ms.from_output("metadata.runtime_ms"),
+    llm.cost.from_output("usage.cost"),  # Excluded
+])
+
+@track(metrics=metrics)
+def my_component(text: str) -> dict:
+    ...
+```
+
+Or configure filters programmatically:
+
+```python
+from squirt.filters import configure_namespace_filters
+
+# Configure once at the start of your test session
+configure_namespace_filters(skip=['llm', 'vector'])
+
+# All @track decorators automatically respect this configuration
+```
+
+### Environment-Based Filtering
+
+Use `when_env()` to conditionally enable metrics:
+
+```python
+from squirt import m, track
+from squirt.filters import when_env
+from squirt.contrib.llm import llm
+
+@track(metrics=[
+    m.runtime_ms.from_output("metadata.runtime_ms"),  # Always collected
+    *when_env("COLLECT_LLM_METRICS", metrics=[
+        llm.cost.from_output("usage.cost"),  # Only when COLLECT_LLM_METRICS=true
+        llm.total_tokens.from_output("usage.tokens"),
+    ]),
+])
+def my_component(text: str) -> dict:
+    ...
+```
+
+### Available Namespace Names
+
+| Name     | Module                  | Metrics                              |
+| -------- | ----------------------- | ------------------------------------ |
+| `m`      | `squirt.builtins`       | Core metrics (runtime, memory, etc.) |
+| `llm`    | `squirt.contrib.llm`    | LLM tokens, cost, latency            |
+| `vector` | `squirt.contrib.vector` | Similarity, embeddings, search       |
+| `chunk`  | `squirt.contrib.chunk`  | Chunking counts and sizes            |
+| `data`   | `squirt.contrib.data`   | Data structure metrics               |
+
+````
+
+### Creating Custom Plugins
+
+Create reusable metric namespaces using `MetricNamespace`:
+
+```python
+from squirt.plugins import MetricNamespace, MetricBuilder, AggregationType, SystemMetric
+
+class TaxMetrics(MetricNamespace):
+    """Custom metrics for tax domain."""
+
+    @property
+    def field_accuracy(self) -> MetricBuilder:
+        """Accuracy of field extraction."""
+        return self._define(
+            name="field_accuracy",
+            system_metric=SystemMetric.ACCURACY,  # Auto-derives AVERAGE
+            description="Per-field accuracy score",
+        )
+
+    @property
+    def validation_passed(self) -> MetricBuilder:
+        """Whether validation passed."""
+        return self._define(
+            name="validation_passed",
+            system_metric=SystemMetric.ERROR_RATE,
+            inverted=True,  # 1.0 = passed, 0.0 = failed
+            description="Tax validation status",
+        )
+
+    @property
+    def field_count(self) -> MetricBuilder:
+        """Number of extracted fields."""
+        return self._define(
+            name="field_count",
+            aggregation=AggregationType.AVERAGE,  # Non-system metric
+            description="Average field count per document",
+        )
+
+# Create singleton instance
+tax = TaxMetrics()
+
+# Usage with full IDE support
+@track(metrics=[
+    tax.field_accuracy.from_output("accuracy"),
+    tax.field_count.from_output("count"),
+])
+def extract_tax_fields(document: str) -> dict:
+    ...
+```
+
+Key benefits of using `MetricNamespace`:
+
+1. **Namespace filtering support** - Users can skip your entire plugin with `--skip-metrics-namespaces=tax`
+2. **Full IDE autocomplete** - Properties provide robust type hints
+3. **Consistent patterns** - `_define()` handles aggregation and system metrics automatically
 
 ### Configuration
 
@@ -244,13 +369,14 @@ squirt report check-regression
 
 ## Documentation
 
-| Document                                   | Description                                   |
-| ------------------------------------------ | --------------------------------------------- |
-| [Metrics Guide](docs/metrics.md)           | Built-in metrics and creating custom metrics  |
-| [Instrumentation](docs/instrumentation.md) | Using `@track` decorator and expectations     |
-| [Reporting](docs/reporting.md)             | Generating reports, PR comments, and insights |
-| [GitHub Actions](docs/github-actions.md)   | CI/CD integration and workflows               |
-| [API Reference](docs/api.md)               | Complete API documentation                    |
+| Document                                          | Description                                   |
+| ------------------------------------------------- | --------------------------------------------- |
+| [Metrics Guide](squirt/docs/metrics.md)           | Built-in metrics and creating custom metrics  |
+| [Instrumentation](squirt/docs/instrumentation.md) | Using `@track` decorator and expectations     |
+| [Filtering Guide](squirt/docs/filtering.md)       | Filtering metrics by namespace                |
+| [Reporting](squirt/docs/reporting.md)             | Generating reports, PR comments, and insights |
+| [GitHub Actions](squirt/docs/github-actions.md)   | CI/CD integration and workflows               |
+| [API Reference](squirt/docs/api.md)               | Complete API documentation                    |
 
 ## Architecture
 
@@ -355,3 +481,4 @@ MIT
 ---
 
 _Squirt - Because metrics should be invisible until they matter._
+````

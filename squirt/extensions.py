@@ -25,10 +25,10 @@ Usage:
 from __future__ import annotations
 
 import contextvars
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from collections.abc import Callable, Sequence
 
 # Registry for custom aggregation functions
-_custom_aggregations: contextvars.ContextVar[Dict[str, Callable]] = (
+_custom_aggregations: contextvars.ContextVar[dict[str, Callable]] = (
     contextvars.ContextVar(
         "custom_aggregations",
         default={},
@@ -36,7 +36,7 @@ _custom_aggregations: contextvars.ContextVar[Dict[str, Callable]] = (
 )
 
 # Registry for custom system metrics
-_custom_system_metrics: contextvars.ContextVar[Dict[str, str]] = contextvars.ContextVar(
+_custom_system_metrics: contextvars.ContextVar[dict[str, str]] = contextvars.ContextVar(
     "custom_system_metrics",
     default={},
 )
@@ -44,7 +44,7 @@ _custom_system_metrics: contextvars.ContextVar[Dict[str, str]] = contextvars.Con
 
 def register_aggregation(
     name: str,
-    func: Callable[[Sequence[Union[float, int, bool]]], Union[float, int]],
+    func: Callable[[Sequence[float | int | bool]], float | int],
     description: str = "",
 ) -> None:
     """
@@ -66,7 +66,7 @@ def register_aggregation(
     _custom_aggregations.set(registry)
 
 
-def register_system_metric(name: str, display_name: Optional[str] = None) -> None:
+def register_system_metric(name: str, display_name: str | None = None) -> None:
     """
     Register a custom system metric category.
 
@@ -82,30 +82,30 @@ def register_system_metric(name: str, display_name: Optional[str] = None) -> Non
     _custom_system_metrics.set(registry)
 
 
-def get_aggregation(name: str) -> Optional[Callable]:
+def get_aggregation(name: str) -> Callable | None:
     """Get a registered aggregation function by name."""
     return _custom_aggregations.get().get(name)
 
 
-def get_system_metric(name: str) -> Optional[str]:
+def get_system_metric(name: str) -> str | None:
     """Get a registered system metric display name."""
     return _custom_system_metrics.get().get(name)
 
 
-def list_aggregations() -> Dict[str, Callable]:
+def list_aggregations() -> dict[str, Callable]:
     """List all registered custom aggregation functions."""
     return _custom_aggregations.get().copy()
 
 
-def list_system_metrics() -> Dict[str, str]:
+def list_system_metrics() -> dict[str, str]:
     """List all registered custom system metrics."""
     return _custom_system_metrics.get().copy()
 
 
 def apply_aggregation(
     name: str,
-    values: Sequence[Union[float, int, bool]],
-) -> Union[float, int]:
+    values: Sequence[float | int | bool],
+) -> float | int:
     """
     Apply an aggregation (built-in or custom) to values.
 

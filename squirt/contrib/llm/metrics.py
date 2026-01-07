@@ -15,75 +15,85 @@ Usage:
         ...
 """
 
-from squirt.plugins import MetricBuilder, AggregationType, SystemMetric
+from squirt.plugins import AggregationType, MetricBuilder, MetricNamespace, SystemMetric
 
 
-class LLMMetrics:
+class LLMMetrics(MetricNamespace):
     """
     Metrics for LLM API calls.
 
     Tracks token usage, costs, latency, and quality evaluation scores.
-    All attributes have explicit type annotations for IDE autocomplete support.
     """
 
-    # Token metrics
-    total_tokens: MetricBuilder = MetricBuilder(
-        "total_tokens",
-        AggregationType.SUM,
-        SystemMetric.TOTAL_TOKENS,
-        description="Total tokens consumed (input + output)",
-    )
+    @property
+    def total_tokens(self) -> MetricBuilder:
+        """Total tokens consumed (input + output)."""
+        return self._define(
+            "total_tokens",
+            AggregationType.SUM,
+            SystemMetric.TOTAL_TOKENS,
+            description="Total tokens consumed (input + output)",
+        )
 
-    input_tokens: MetricBuilder = MetricBuilder(
-        "input_tokens",
-        AggregationType.SUM,
-        SystemMetric.TOTAL_TOKENS,
-        description="Input/prompt tokens consumed",
-    )
+    @property
+    def input_tokens(self) -> MetricBuilder:
+        """Input/prompt tokens consumed."""
+        return self._define(
+            "input_tokens",
+            AggregationType.SUM,
+            SystemMetric.TOTAL_TOKENS,
+            description="Input/prompt tokens consumed",
+        )
 
-    output_tokens: MetricBuilder = MetricBuilder(
-        "output_tokens",
-        AggregationType.SUM,
-        SystemMetric.TOTAL_TOKENS,
-        description="Output/completion tokens generated",
-    )
+    @property
+    def output_tokens(self) -> MetricBuilder:
+        """Output/completion tokens generated."""
+        return self._define(
+            "output_tokens",
+            AggregationType.SUM,
+            SystemMetric.TOTAL_TOKENS,
+            description="Output/completion tokens generated",
+        )
 
-    # Cost metrics
-    cost: MetricBuilder = MetricBuilder(
-        "cost_usd",
-        AggregationType.SUM,
-        SystemMetric.COST_USD,
-        description="API call cost in USD",
-    )
+    @property
+    def cost(self) -> MetricBuilder:
+        """API call cost in USD."""
+        return self._define(
+            "cost_usd",
+            AggregationType.SUM,
+            SystemMetric.COST_USD,
+            description="API call cost in USD",
+        )
 
-    # Latency metrics
-    latency: MetricBuilder = MetricBuilder(
-        "llm_latency_ms",
-        AggregationType.AVERAGE,
-        SystemMetric.LATENCY_P95,
-        description="Response latency in milliseconds",
-    )
+    @property
+    def latency(self) -> MetricBuilder:
+        """Response latency in milliseconds."""
+        return self._define(
+            "llm_latency_ms",
+            AggregationType.AVERAGE,
+            SystemMetric.LATENCY_P95,
+            description="Response latency in milliseconds",
+        )
 
-    time_to_first_token: MetricBuilder = MetricBuilder(
-        "time_to_first_token_ms",
-        AggregationType.AVERAGE,
-        SystemMetric.LATENCY_P95,
-        description="Time to first token in milliseconds (streaming)",
-    )
+    @property
+    def time_to_first_token(self) -> MetricBuilder:
+        """Time to first token in milliseconds (streaming)."""
+        return self._define(
+            "time_to_first_token_ms",
+            AggregationType.AVERAGE,
+            SystemMetric.LATENCY_P95,
+            description="Time to first token in milliseconds (streaming)",
+        )
 
-    tokens_per_second: MetricBuilder = MetricBuilder(
-        "tokens_per_second",
-        AggregationType.AVERAGE,
-        SystemMetric.THROUGHPUT,
-        description="Token generation rate",
-    )
-
-    # Quality/validation metrics (implementation-specific)
-    # Projects should define domain-specific quality metrics:
-    # - relevance, coherence, groundedness, fluency, completeness (Azure AI style)
-    # - schema_valid, parse_success (validation)
-    # - retry_count (reliability)
-    # These vary by use case and should be in project-level metrics
+    @property
+    def tokens_per_second(self) -> MetricBuilder:
+        """Token generation rate."""
+        return self._define(
+            "tokens_per_second",
+            AggregationType.AVERAGE,
+            SystemMetric.THROUGHPUT,
+            description="Token generation rate",
+        )
 
 
 # Singleton instance

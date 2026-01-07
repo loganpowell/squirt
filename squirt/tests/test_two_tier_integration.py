@@ -5,20 +5,16 @@ Tests that system metrics are properly generated from real component results.
 """
 
 import json
-import sys
 from pathlib import Path
-
-import pytest
 
 # Add backend to path
 BACKEND_DIR = Path(__file__).parent.parent.parent
 
 from squirt import (
-    generate_heartbeat_from_graph,
-    aggregate_by_system_metrics,
     DependencyGraphBuilder,
     MetricsClient,
-    configure_metrics,
+    aggregate_by_system_metrics,
+    generate_heartbeat_from_graph,
 )
 
 
@@ -147,7 +143,7 @@ def test_system_metrics_integration(tmp_path):
     ), f"Expected error_rate 0.0, got {system_metrics['error_rate']}"
 
     print("\n✅ System metrics integration test passed!")
-    print(f"\nSystem Metrics Generated:")
+    print("\nSystem Metrics Generated:")
     for metric_name, value in sorted(system_metrics.items()):
         print(f"  {metric_name}: {value}")
 
@@ -207,8 +203,8 @@ def test_system_metrics_with_inversion(tmp_path):
     ), f"Expected error_rate {expected_error_rate}, got {system_metrics['error_rate']}"
 
     print("\n✅ Metric inversion test passed!")
-    print(f"  Component1 error_free: 0.9 → error_rate: 0.1")
-    print(f"  Component2 structure_valid: 0.95 → error_rate: 0.05")
+    print("  Component1 error_free: 0.9 → error_rate: 0.1")
+    print("  Component2 structure_valid: 0.95 → error_rate: 0.05")
     print(f"  Aggregated error_rate: {system_metrics['error_rate']:.3f}")
 
 
@@ -300,11 +296,6 @@ class TestMetricsReporting:
 
     def test_heartbeat_generation(self, tmp_path):
         """Test that heartbeat can be generated from results."""
-        from squirt import (
-            generate_heartbeat_from_graph,
-            DependencyGraphBuilder,
-            MetricsClient,
-        )
 
         # Build a simple graph for testing
         builder = DependencyGraphBuilder()
@@ -322,7 +313,7 @@ class TestMetricsReporting:
             json.dump(sample_result, f)
 
         # Use temp directory for test isolation
-        temp_client = MetricsClient(results_dir=str(tmp_path))
+        MetricsClient(results_dir=str(tmp_path))
 
         # Generate heartbeat using graph-based API
         heartbeat = generate_heartbeat_from_graph(

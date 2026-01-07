@@ -28,16 +28,17 @@ Usage:
 """
 
 import ast
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Union
+from typing import Any
 
 
 class FunctionCallVisitor(ast.NodeVisitor):
     """AST visitor that extracts function calls from a function body."""
 
     def __init__(self):
-        self.calls: Set[str] = set()
+        self.calls: set[str] = set()
 
     def visit_Call(self, node: ast.Call) -> None:
         """Visit a function call and record its name."""
@@ -52,7 +53,7 @@ class DecoratedFunctionVisitor(ast.NodeVisitor):
     """AST visitor that finds functions decorated with @track."""
 
     def __init__(self):
-        self.functions: Dict[str, Dict[str, Any]] = {}
+        self.functions: dict[str, dict[str, Any]] = {}
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Visit a function definition and check for our decorator."""
@@ -80,7 +81,7 @@ class DecoratedFunctionVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def _has_track_decorator(
-        self, node: Union[ast.FunctionDef, ast.AsyncFunctionDef]
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef
     ) -> bool:
         """Check if function has @track or related decorator."""
         for decorator in node.decorator_list:
@@ -102,8 +103,8 @@ class DecoratedFunctionVisitor(ast.NodeVisitor):
         return False
 
     def _get_decorator_names(
-        self, node: Union[ast.FunctionDef, ast.AsyncFunctionDef]
-    ) -> List[str]:
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef
+    ) -> list[str]:
         """Extract names of all decorators on a function."""
         names = []
         for decorator in node.decorator_list:
@@ -115,15 +116,15 @@ class DecoratedFunctionVisitor(ast.NodeVisitor):
         return names
 
     def _extract_function_calls(
-        self, func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef]
-    ) -> List[str]:
+        self, func_node: ast.FunctionDef | ast.AsyncFunctionDef
+    ) -> list[str]:
         """Extract names of functions called within this function."""
         visitor = FunctionCallVisitor()
         visitor.visit(func_node)
         return list(visitor.calls)
 
     def _get_return_annotation(
-        self, node: Union[ast.FunctionDef, ast.AsyncFunctionDef]
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef
     ) -> str:
         """Extract return type annotation if present."""
         if node.returns:
@@ -140,8 +141,8 @@ class DependencyGraph:
     traversal and optional conversion to NetworkX for visualization.
     """
 
-    nodes: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    edges: List[Tuple[str, str]] = field(default_factory=list)
+    nodes: dict[str, dict[str, Any]] = field(default_factory=dict)
+    edges: list[tuple[str, str]] = field(default_factory=list)
 
     def __contains__(self, node_name: str) -> bool:
         return node_name in self.nodes
@@ -162,16 +163,16 @@ class DependencyGraph:
     def has_edge(self, source: str, target: str) -> bool:
         return (source, target) in self.edges
 
-    def get_roots(self) -> List[str]:
+    def get_roots(self) -> list[str]:
         """Find root nodes (nodes with no incoming edges)."""
         called_funcs = {dst for _, dst in self.edges}
         return [n for n in self.nodes if n not in called_funcs]
 
-    def get_children(self, node_name: str) -> List[str]:
+    def get_children(self, node_name: str) -> list[str]:
         """Get nodes that this node calls (outgoing edges)."""
         return [dst for src, dst in self.edges if src == node_name and dst != node_name]
 
-    def get_parents(self, node_name: str) -> List[str]:
+    def get_parents(self, node_name: str) -> list[str]:
         """Get nodes that call this node (incoming edges)."""
         return [src for src, dst in self.edges if dst == node_name]
 
@@ -181,12 +182,12 @@ class DependencyGraph:
     def out_degree(self, node_name: str) -> int:
         return len(self.get_children(node_name))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to a serializable dict."""
         return {"nodes": self.nodes, "edges": self.edges}
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DependencyGraph":
+    def from_dict(cls, data: dict[str, Any]) -> "DependencyGraph":
         """Create a DependencyGraph from a dict representation."""
         graph = cls()
         graph.nodes = data.get("nodes", {})
@@ -222,10 +223,10 @@ class DependencyGraphBuilder:
     """Analyzes decorated functions in a codebase and builds a dependency graph."""
 
     def __init__(self):
-        self.functions: Dict[str, Dict[str, Any]] = {}
-        self.file_map: Dict[str, str] = {}
+        self.functions: dict[str, dict[str, Any]] = {}
+        self.file_map: dict[str, str] = {}
 
-    def analyze_file(self, file_path: Path) -> Dict[str, Dict[str, Any]]:
+    def analyze_file(self, file_path: Path) -> dict[str, dict[str, Any]]:
         """Analyze a single Python file for decorated functions."""
         try:
             source = file_path.read_text()
@@ -243,7 +244,7 @@ class DependencyGraphBuilder:
         return visitor.functions
 
     def build_graph(
-        self, source_dir: Path, exclude_patterns: Optional[List[str]] = None
+        self, source_dir: Path, exclude_patterns: list[str] | None = None
     ) -> DependencyGraph:
         """Parse all Python files in a directory and build the dependency graph."""
         exclude_patterns = exclude_patterns or [
@@ -276,35 +277,35 @@ class DependencyGraphBuilder:
 
         return graph
 
-    def get_roots(self, graph: Optional[DependencyGraph] = None) -> List[str]:
+    def get_roots(self, graph: DependencyGraph | None = None) -> list[str]:
         """Find root nodes. Prefer using graph.get_roots() directly."""
         if graph is None:
             graph = self._build_graph()
         return graph.get_roots()
 
     def get_children(
-        self, func_name: str, graph: Optional[DependencyGraph] = None
-    ) -> List[str]:
+        self, func_name: str, graph: DependencyGraph | None = None
+    ) -> list[str]:
         """Get functions called by the given function."""
         if graph is None:
             graph = self._build_graph()
         return graph.get_children(func_name)
 
     def get_parents(
-        self, func_name: str, graph: Optional[DependencyGraph] = None
-    ) -> List[str]:
+        self, func_name: str, graph: DependencyGraph | None = None
+    ) -> list[str]:
         """Get functions that call the given function."""
         if graph is None:
             graph = self._build_graph()
         return graph.get_parents(func_name)
 
 
-def visualize_graph(graph: DependencyGraph, output_path: Optional[str] = None) -> str:
+def visualize_graph(graph: DependencyGraph, output_path: str | None = None) -> str:
     """Create a text visualization of the dependency graph."""
     lines = ["Component Dependency Graph", "=" * 40, ""]
     roots = graph.get_roots()
 
-    def _print_tree(node: str, indent: int = 0, visited: Optional[Set[str]] = None):
+    def _print_tree(node: str, indent: int = 0, visited: set[str] | None = None):
         if visited is None:
             visited = set()
         prefix = "  " * indent
@@ -332,8 +333,8 @@ def visualize_graph(graph: DependencyGraph, output_path: Optional[str] = None) -
 
 
 def analyze_codebase(
-    source_dir: str, exclude_patterns: Optional[List[str]] = None
-) -> Tuple[DependencyGraph, DependencyGraphBuilder]:
+    source_dir: str, exclude_patterns: list[str] | None = None
+) -> tuple[DependencyGraph, DependencyGraphBuilder]:
     """Analyze a codebase and return the dependency graph."""
     builder = DependencyGraphBuilder()
     graph = builder.build_graph(Path(source_dir), exclude_patterns)

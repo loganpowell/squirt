@@ -37,9 +37,9 @@ Legacy pattern (still works, but less IDE support in decorator contexts):
     my = MyMetrics()
 """
 
-from .base import MetricNamespace, MetricBuilder
-from ..core.types import AggregationType
 from ..categories.system import SystemMetric
+from ..core.types import AggregationType
+from .base import MetricBuilder, MetricNamespace
 
 __all__ = [
     "MetricNamespace",

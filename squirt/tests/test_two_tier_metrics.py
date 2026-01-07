@@ -9,20 +9,20 @@ Tests Phase 1 components:
 """
 
 from squirt import (
+    AggregationType,
     SystemMetric,
+    aggregate_by_system_metrics,
+    aggregate_values,
     get_aggregation_type,
     should_invert,
-    AggregationType,
-    aggregate_values,
-    aggregate_by_system_metrics,
 )
 from squirt.transforms import (
+    cpu_usage_transform,
+    latency_p95_transform,
+    memory_usage_transform,
+    throughput_transform,
     token_cost_transform,
     total_tokens_transform,
-    memory_usage_transform,
-    cpu_usage_transform,
-    throughput_transform,
-    latency_p95_transform,
 )
 
 
