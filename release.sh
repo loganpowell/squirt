@@ -156,7 +156,7 @@ fi
 info "Running tests..."
 if command -v pytest > /dev/null 2>&1; then
     if [ "$DRY_RUN" = false ]; then
-        if ! pytest tests/ -v; then
+        if ! pytest squirt/tests/ -v; then
             error "Tests failed. Fix tests before releasing."
         fi
         success "Tests passed"
