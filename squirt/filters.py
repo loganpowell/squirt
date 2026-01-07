@@ -87,61 +87,56 @@ def apply_runtime_filters(metrics: list[Metric]) -> list[Metric]:
     if not skip_names and not only_names:
         return metrics
 
-    # Import here to get the actual namespace instances
-    from . import m as builtin_m
+    # Helper to check if a namespace matches a name filter
+    def matches_name(namespace: Any, name: str) -> bool:
+        """Check if namespace matches the given name filter."""
+        if namespace is None:
+            return False
 
-    # Build namespace name to type mapping
-    namespace_map = {"m": type(builtin_m)}
+        ns_type = type(namespace)
+        ns_class_name = ns_type.__name__.lower()
+        ns_module = ns_type.__module__
+        name_lower = name.lower()
 
-    # Try to import contrib namespaces dynamically
-    try:
-        from .contrib.llm import llm
+        # Special case: "m" matches BuiltinMetrics
+        if name_lower == "m" and "builtin" in ns_class_name:
+            return True
 
-        namespace_map["llm"] = type(llm)
-    except ImportError:
-        pass
+        # Match by class name (e.g., "AzureMetrics" matches "azure")
+        # Remove "Metrics" suffix and compare
+        class_name_base = ns_class_name.replace("metrics", "").strip("_")
+        if class_name_base == name_lower:
+            return True
 
-    try:
-        from .contrib.vector import vector
+        # Match by last part of module name (e.g., "squirt.contrib.azure" matches "azure")
+        module_parts = ns_module.split(".")
+        if module_parts and module_parts[-1] == name_lower:
+            return True
 
-        namespace_map["vector"] = type(vector)
-    except ImportError:
-        pass
+        # Exact type name match
+        if ns_class_name == name_lower:
+            return True
 
-    try:
-        from .contrib.chunk import chunk
-
-        namespace_map["chunk"] = type(chunk)
-    except ImportError:
-        pass
-
-    try:
-        from .contrib.data import data
-
-        namespace_map["data"] = type(data)
-    except ImportError:
-        pass
+        return False
 
     # Apply filters
     if only_names:
-        allowed_types = [
-            namespace_map.get(name) for name in only_names if name in namespace_map
-        ]
         return [
             m
             for m in metrics
-            if getattr(m, "_namespace", None) is not None
-            and type(m._namespace) in allowed_types
+            if any(
+                matches_name(getattr(m, "_namespace", None), name)
+                for name in only_names
+            )
         ]
     elif skip_names:
-        blocked_types = [
-            namespace_map.get(name) for name in skip_names if name in namespace_map
-        ]
         return [
             m
             for m in metrics
-            if getattr(m, "_namespace", None) is None
-            or type(m._namespace) not in blocked_types
+            if not any(
+                matches_name(getattr(m, "_namespace", None), name)
+                for name in skip_names
+            )
         ]
 
     return metrics

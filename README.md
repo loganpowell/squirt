@@ -278,8 +278,6 @@ def my_component(text: str) -> dict:
 | `chunk`  | `squirt.contrib.chunk`  | Chunking counts and sizes            |
 | `data`   | `squirt.contrib.data`   | Data structure metrics               |
 
-````
-
 ### Creating Custom Plugins
 
 Create reusable metric namespaces using `MetricNamespace`:
@@ -481,4 +479,7 @@ MIT
 ---
 
 _Squirt - Because metrics should be invisible until they matter._
-````
+
+```
+
+```
