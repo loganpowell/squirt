@@ -73,6 +73,11 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
     - name: Install squirt
       shell: bash
       run: |
@@ -86,21 +91,23 @@ runs:
         if [ -f "pyproject.toml" ]; then
           # Check for uv first (fastest)
           if command -v uv &> /dev/null; then
-            echo "Installing with uv..."
+            echo "📦 Installing with uv..."
             uv sync
           # Then poetry
           elif [ -f "poetry.lock" ]; then
-            echo "Installing with poetry..."
+            echo "📦 Installing with poetry..."
             pip install poetry
             poetry install
           # Then pip
           else
-            echo "Installing with pip..."
+            echo "📦 Installing with pip..."
             pip install -e .
           fi
         elif [ -f "requirements.txt" ]; then
-          echo "Installing from requirements.txt..."
+          echo "📦 Installing from requirements.txt..."
           pip install -r requirements.txt
+        else
+          echo "⚠️  No dependency file found, skipping installation"
         fi
 
     - name: Run tests
