@@ -209,7 +209,38 @@ class InsightGenerator:
                     related_metrics={"accuracy": accuracy},
                 )
             )
-        # Don't generate INFO insights for healthy accuracy - only flag real issues
+        else:
+            # System is healthy - provide specific, actionable improvement suggestions
+            # Find components with lowest accuracy to give concrete guidance
+            if self.hierarchical_report:
+                low_accuracy_components = []
+                for component in self.hierarchical_report:
+                    comp_accuracy = component.get("metrics", {}).get("expected_match", 1.0)
+                    if comp_accuracy < 1.0:
+                        low_accuracy_components.append({
+                            "name": component.get("component", "unknown"),
+                            "accuracy": comp_accuracy
+                        })
+                
+                if low_accuracy_components:
+                    # Sort by accuracy and take the lowest
+                    low_accuracy_components.sort(key=lambda x: x["accuracy"])
+                    lowest = low_accuracy_components[0]
+                    
+                    insights.append(
+                        Insight(
+                            title="Accuracy Improvement Opportunity",
+                            severity=Severity.INFO,
+                            description=f"System accuracy is {accuracy:.1%}. Component '{lowest['name']}' has lowest accuracy at {lowest['accuracy']:.1%}.",
+                            likely_cause="Component-specific extraction challenges",
+                            suggested_actions=[
+                                f"Review '{lowest['name']}' expected_match results",
+                                f"Analyze failing test cases for '{lowest['name']}'",
+                                "Compare with expectations.json for patterns",
+                            ],
+                            related_metrics={"system_accuracy": accuracy, "component_accuracy": lowest["accuracy"]},
+                        )
+                    )
 
         return insights
 
@@ -261,7 +292,31 @@ class InsightGenerator:
                     related_metrics={"error_rate": error_rate},
                 )
             )
-        # Don't generate INFO insights for healthy error rate - only flag actual problems
+        elif error_rate > 0:
+            # Low but non-zero error rate - identify specific failing components
+            if self.hierarchical_report:
+                failing_components = []
+                for component in self.hierarchical_report:
+                    comp_error_free = component.get("metrics", {}).get("error_free", 1.0)
+                    if comp_error_free < 1.0:
+                        failing_components.append(component.get("component", "unknown"))
+                
+                if failing_components:
+                    comp_list = "', '".join(failing_components[:3])  # Show up to 3
+                    insights.append(
+                        Insight(
+                            title="Error Rate Optimization",
+                            severity=Severity.INFO,
+                            description=f"System has {error_rate:.1%} error rate. Component(s) with errors: '{comp_list}'.",
+                            likely_cause="Specific component validation failures",
+                            suggested_actions=[
+                                f"Review error_free metric for '{failing_components[0]}'",
+                                "Check structure_valid for these components",
+                                "Analyze input patterns causing failures",
+                            ],
+                            related_metrics={"error_rate": error_rate},
+                        )
+                    )
 
         return insights
 
@@ -305,7 +360,32 @@ class InsightGenerator:
                     related_metrics={"runtime_ms": runtime_ms},
                 )
             )
-        # Don't generate INFO insights for healthy performance - only flag actual issues
+        else:
+            # Performance is good - identify slowest component for targeted optimization
+            if self.hierarchical_report:
+                components_with_runtime = [
+                    c for c in self.hierarchical_report 
+                    if c.get("metrics", {}).get("runtime_ms")
+                ]
+                if components_with_runtime:
+                    slowest = max(components_with_runtime, key=lambda x: x["metrics"]["runtime_ms"])
+                    slowest_name = slowest.get("component", "unknown")
+                    slowest_time = slowest["metrics"]["runtime_ms"]
+                    
+                    insights.append(
+                        Insight(
+                            title="Performance Optimization Target",
+                            severity=Severity.INFO,
+                            description=f"Total runtime is {runtime_ms/1000:.2f}s. Slowest component: '{slowest_name}' at {slowest_time/1000:.2f}s ({slowest_time/runtime_ms*100:.1f}% of total).",
+                            likely_cause="Natural bottleneck in pipeline",
+                            suggested_actions=[
+                                f"Profile '{slowest_name}' for optimization opportunities",
+                                "Check if parallel execution is possible",
+                                "Consider caching for repeated operations",
+                            ],
+                            related_metrics={"runtime_ms": runtime_ms, "slowest_component_ms": slowest_time},
+                        )
+                    )
 
         return insights
 
