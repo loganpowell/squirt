@@ -1,0 +1,200 @@
+name: "Squirt Metrics Report"
+description: "Generate and report metrics from squirt-instrumented tests"
+author: "Squirt"
+
+branding:
+  icon: "bar-chart-2"
+  color: "blue"
+
+inputs:
+  working-directory:
+    description: "Working directory (default: .)"
+    required: false
+    default: "."
+
+  commit-history:
+    description: "Whether to commit history back to repo (default: true for push events)"
+    required: false
+    default: "auto"
+
+  create-pr-comment:
+    description: "Whether to create/update PR comment (default: true for PRs)"
+    required: false
+    default: "true"
+
+  regression-threshold:
+    description: "Accuracy regression threshold percentage (uses squirt config if not set)"
+    required: false
+    default: ""
+
+  github-token:
+    description: "GitHub token for creating PR comments"
+    required: false
+    default: ${{ github.token }}
+
+  python-version:
+    description: "Python version to use (default: 3.12)"
+    required: false
+    default: "3.12"
+
+outputs:
+  report-path:
+    description: "Path to the generated full report"
+    value: ${{ steps.report.outputs.report_path }}
+
+  pr-comment-path:
+    description: "Path to the generated PR comment"
+    value: ${{ steps.pr_comment.outputs.comment_path }}
+
+  has-regression:
+    description: "Whether accuracy regression was detected"
+    value: ${{ steps.regression.outputs.has_regression }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install squirt
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install squirt
+
+    - name: Generate Full Report
+      id: report
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        squirt report full --output metrics-report.md
+        echo "report_path=${{ inputs.working-directory }}/metrics-report.md" >> $GITHUB_OUTPUT
+
+    - name: Generate PR Comment
+      id: pr_comment
+      if: github.event_name == 'pull_request' && inputs.create-pr-comment == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        squirt report pr --output pr-comment.md
+        echo "comment_path=${{ inputs.working-directory }}/pr-comment.md" >> $GITHUB_OUTPUT
+
+    - name: Check for Accuracy Regression
+      id: regression
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        THRESHOLD_FLAG=""
+        if [ -n "${{ inputs.regression-threshold }}" ]; then
+          THRESHOLD_FLAG="--threshold ${{ inputs.regression-threshold }}"
+        fi
+
+        if squirt report check-regression $THRESHOLD_FLAG; then
+          echo "has_regression=false" >> $GITHUB_OUTPUT
+        else
+          echo "has_regression=true" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+      continue-on-error: false
+
+    - name: Get Squirt Config
+      id: config
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Get configured directories from squirt
+        RESULTS_DIR=$(python -c "from squirt import get_config; print(get_config().get('results_dir', 'tests/results'))" 2>/dev/null || echo "tests/results")
+        HISTORY_DIR=$(python -c "from squirt import get_config; print(get_config().get('history_dir', 'tests/history'))" 2>/dev/null || echo "tests/history")
+        echo "results_dir=$RESULTS_DIR" >> $GITHUB_OUTPUT
+        echo "history_dir=$HISTORY_DIR" >> $GITHUB_OUTPUT
+
+    - name: Commit History to Repo
+      if: |
+        (inputs.commit-history == 'true') || 
+        (inputs.commit-history == 'auto' && github.event_name == 'push')
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        HISTORY_DIR="${{ steps.config.outputs.history_dir }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add "$HISTORY_DIR"
+        if ! git diff --staged --quiet; then
+          git commit -m "Update metrics history [skip ci]"
+          git push
+        else
+          echo "No changes to commit"
+        fi
+
+    - name: Upload Report Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: squirt-metrics-report
+        path: ${{ inputs.working-directory }}/metrics-report.md
+        retention-days: 30
+
+    - name: Upload History Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: squirt-metrics-history
+        path: ${{ inputs.working-directory }}/${{ steps.config.outputs.history_dir }}
+        retention-days: 90
+
+    - name: Create/Update PR Comment
+      if: github.event_name == 'pull_request' && inputs.create-pr-comment == 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          const commentPath = path.join(
+            '${{ inputs.working-directory }}',
+            'pr-comment.md'
+          );
+          const commentBody = fs.readFileSync(commentPath, 'utf8');
+
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('Metrics Summary')
+          );
+
+          if (botComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: commentBody
+            });
+            console.log('Updated existing PR comment');
+          } else {
+            // Create new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+            console.log('Created new PR comment');
+          }
+
+    - name: Add Job Summary
+      if: always()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ -f metrics-report.md ]; then
+          cat metrics-report.md >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Metrics report not generated" >> $GITHUB_STEP_SUMMARY
+        fi
