@@ -272,7 +272,7 @@ class InsightGenerator:
         runtime_ms = self.heartbeat.metrics.get(
             "runtime_ms.sum"
         ) or self.heartbeat.metrics.get("runtime_ms")
-        
+
         if runtime_ms is None:
             return insights  # No runtime metric to analyze
 
@@ -316,7 +316,7 @@ class InsightGenerator:
         memory_mb = self.heartbeat.metrics.get(
             "memory_mb.max"
         ) or self.heartbeat.metrics.get("memory_mb")
-        
+
         if memory_mb is None:
             return insights  # No memory metric to analyze
 
