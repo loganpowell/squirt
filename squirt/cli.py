@@ -28,8 +28,14 @@ def cmd_test(args: argparse.Namespace) -> int:
     """Run pytest with squirt instrumentation."""
     import subprocess
     import sys
+    import shutil
 
-    cmd = [sys.executable, "-m", "pytest"] + args.paths
+    # Check if uv is available and use it if so (handles venv automatically)
+    uv_path = shutil.which("uv")
+    if uv_path:
+        cmd = ["uv", "run", "pytest"] + args.paths
+    else:
+        cmd = [sys.executable, "-m", "pytest"] + args.paths
 
     if args.verbose:
         cmd.append("-v")
