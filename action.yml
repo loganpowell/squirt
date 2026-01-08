@@ -69,7 +69,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        squirt report full --output metrics-report.md
+        squirt report full --save-history --output metrics-report.md
         echo "report_path=${{ inputs.working-directory }}/metrics-report.md" >> $GITHUB_OUTPUT
 
     - name: Generate PR Comment
