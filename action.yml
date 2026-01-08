@@ -79,6 +79,30 @@ runs:
         python -m pip install --upgrade pip
         pip install squirt
 
+    - name: Install project dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ -f "pyproject.toml" ]; then
+          # Check for uv first (fastest)
+          if command -v uv &> /dev/null; then
+            echo "Installing with uv..."
+            uv sync
+          # Then poetry
+          elif [ -f "poetry.lock" ]; then
+            echo "Installing with poetry..."
+            pip install poetry
+            poetry install
+          # Then pip
+          else
+            echo "Installing with pip..."
+            pip install -e .
+          fi
+        elif [ -f "requirements.txt" ]; then
+          echo "Installing from requirements.txt..."
+          pip install -r requirements.txt
+        fi
+
     - name: Run tests
       if: inputs.run-tests == 'true'
       shell: bash
