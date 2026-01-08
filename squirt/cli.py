@@ -24,6 +24,26 @@ from pathlib import Path
 from typing import Any
 
 
+def cmd_test(args: argparse.Namespace) -> int:
+    """Run pytest with squirt instrumentation."""
+    import subprocess
+    
+    cmd = ["pytest"] + args.paths
+    
+    if args.verbose:
+        cmd.append("-v")
+    
+    if args.tb:
+        cmd.extend(["--tb", args.tb])
+    
+    if args.maxfail:
+        cmd.extend(["--maxfail", str(args.maxfail)])
+    
+    print(f"Running: {' '.join(cmd)}")
+    result = subprocess.run(cmd)
+    return result.returncode
+
+
 def _get_git_hash() -> str:
     """Get current git commit hash."""
     try:
@@ -411,6 +431,32 @@ def main(argv: list[str] | None = None) -> int:
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
+    # test subcommand
+    test_parser = subparsers.add_parser("test", help="Run tests with squirt instrumentation")
+    test_parser.add_argument(
+        "paths",
+        nargs="*",
+        default=["tests/instrumented/"],
+        help="Test paths to run (default: tests/instrumented/)",
+    )
+    test_parser.add_argument(
+        "--maxfail",
+        type=int,
+        help="Stop after N failures",
+    )
+    test_parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Verbose output",
+    )
+    test_parser.add_argument(
+        "--tb",
+        default="short",
+        choices=["short", "long", "no", "line", "native"],
+        help="Traceback print mode (default: short)",
+    )
+
     # report subcommand
     report_parser = subparsers.add_parser("report", help="Report commands")
     report_subparsers = report_parser.add_subparsers(dest="report_command")
@@ -472,7 +518,9 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
 
-    if args.command == "report":
+    if args.command == "test":
+        return cmd_test(args)
+    elif args.command == "report":
         if args.report_command == "generate":
             return cmd_generate(args)
         elif args.report_command == "trends":

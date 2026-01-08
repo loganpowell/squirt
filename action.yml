@@ -37,6 +37,21 @@ inputs:
     required: false
     default: "3.12"
 
+  run-tests:
+    description: "Whether to run tests before generating report (default: true)"
+    required: false
+    default: "true"
+
+  test-paths:
+    description: "Test paths to run (default: tests/instrumented/)"
+    required: false
+    default: "tests/instrumented/"
+
+  test-maxfail:
+    description: "Stop after N test failures (optional)"
+    required: false
+    default: ""
+
 outputs:
   report-path:
     description: "Path to the generated full report"
@@ -63,6 +78,18 @@ runs:
       run: |
         python -m pip install --upgrade pip
         pip install squirt
+
+    - name: Run tests
+      if: inputs.run-tests == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        MAXFAIL_FLAG=""
+        if [ -n "${{ inputs.test-maxfail }}" ]; then
+          MAXFAIL_FLAG="--maxfail ${{ inputs.test-maxfail }}"
+        fi
+        squirt test ${{ inputs.test-paths }} -v --tb short $MAXFAIL_FLAG
+      continue-on-error: true
 
     - name: Generate Full Report
       id: report
