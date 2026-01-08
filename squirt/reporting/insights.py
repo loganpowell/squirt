@@ -215,18 +215,22 @@ class InsightGenerator:
             if self.hierarchical_report:
                 low_accuracy_components = []
                 for component in self.hierarchical_report:
-                    comp_accuracy = component.get("metrics", {}).get("expected_match", 1.0)
+                    comp_accuracy = component.get("metrics", {}).get(
+                        "expected_match", 1.0
+                    )
                     if comp_accuracy < 1.0:
-                        low_accuracy_components.append({
-                            "name": component.get("component", "unknown"),
-                            "accuracy": comp_accuracy
-                        })
-                
+                        low_accuracy_components.append(
+                            {
+                                "name": component.get("component", "unknown"),
+                                "accuracy": comp_accuracy,
+                            }
+                        )
+
                 if low_accuracy_components:
                     # Sort by accuracy and take the lowest
                     low_accuracy_components.sort(key=lambda x: x["accuracy"])
                     lowest = low_accuracy_components[0]
-                    
+
                     insights.append(
                         Insight(
                             title="Accuracy Improvement Opportunity",
@@ -238,7 +242,10 @@ class InsightGenerator:
                                 f"Analyze failing test cases for '{lowest['name']}'",
                                 "Compare with expectations.json for patterns",
                             ],
-                            related_metrics={"system_accuracy": accuracy, "component_accuracy": lowest["accuracy"]},
+                            related_metrics={
+                                "system_accuracy": accuracy,
+                                "component_accuracy": lowest["accuracy"],
+                            },
                         )
                     )
 
@@ -297,10 +304,12 @@ class InsightGenerator:
             if self.hierarchical_report:
                 failing_components = []
                 for component in self.hierarchical_report:
-                    comp_error_free = component.get("metrics", {}).get("error_free", 1.0)
+                    comp_error_free = component.get("metrics", {}).get(
+                        "error_free", 1.0
+                    )
                     if comp_error_free < 1.0:
                         failing_components.append(component.get("component", "unknown"))
-                
+
                 if failing_components:
                     comp_list = "', '".join(failing_components[:3])  # Show up to 3
                     insights.append(
@@ -364,14 +373,18 @@ class InsightGenerator:
             # Performance is good - identify slowest component for targeted optimization
             if self.hierarchical_report:
                 components_with_runtime = [
-                    c for c in self.hierarchical_report 
+                    c
+                    for c in self.hierarchical_report
                     if c.get("metrics", {}).get("runtime_ms")
                 ]
                 if components_with_runtime:
-                    slowest = max(components_with_runtime, key=lambda x: x["metrics"]["runtime_ms"])
+                    slowest = max(
+                        components_with_runtime,
+                        key=lambda x: x["metrics"]["runtime_ms"],
+                    )
                     slowest_name = slowest.get("component", "unknown")
                     slowest_time = slowest["metrics"]["runtime_ms"]
-                    
+
                     insights.append(
                         Insight(
                             title="Performance Optimization Target",
@@ -383,7 +396,10 @@ class InsightGenerator:
                                 "Check if parallel execution is possible",
                                 "Consider caching for repeated operations",
                             ],
-                            related_metrics={"runtime_ms": runtime_ms, "slowest_component_ms": slowest_time},
+                            related_metrics={
+                                "runtime_ms": runtime_ms,
+                                "slowest_component_ms": slowest_time,
+                            },
                         )
                     )
 
