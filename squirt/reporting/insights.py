@@ -209,22 +209,7 @@ class InsightGenerator:
                     related_metrics={"accuracy": accuracy},
                 )
             )
-        elif accuracy > self.ACCURACY_THRESHOLD:
-            # Healthy but room for improvement
-            insights.append(
-                Insight(
-                    title="Accuracy Optimization Opportunity",
-                    severity=Severity.INFO,
-                    description=f"System accuracy is {accuracy:.1%}. While above {self.ACCURACY_THRESHOLD:.0%} threshold, there's room for improvement.",
-                    likely_cause="Some edge cases or data variations not fully handled",
-                    suggested_actions=[
-                        "Review test cases with incorrect results",
-                        "Consider additional validation rules",
-                        "Check for patterns in mismatches",
-                    ],
-                    related_metrics={"accuracy": accuracy},
-                )
-            )
+        # Don't generate INFO insights for healthy accuracy - only flag real issues
 
         return insights
 
@@ -276,22 +261,7 @@ class InsightGenerator:
                     related_metrics={"error_rate": error_rate},
                 )
             )
-        elif error_rate < self.ERROR_RATE_THRESHOLD and error_rate > 0:
-            # Healthy but not zero - aim for perfection
-            insights.append(
-                Insight(
-                    title="Error Rate Analysis",
-                    severity=Severity.INFO,
-                    description=f"System has {error_rate:.1%} error rate. While below {self.ERROR_RATE_THRESHOLD:.0%} threshold, aim for zero errors.",
-                    likely_cause="Some inputs causing validation or processing failures",
-                    suggested_actions=[
-                        "Review error logs for patterns",
-                        "Check structure_valid failures",
-                        "Add better error handling for edge cases",
-                    ],
-                    related_metrics={"error_rate": error_rate},
-                )
-            )
+        # Don't generate INFO insights for healthy error rate - only flag actual problems
 
         return insights
 
@@ -335,32 +305,7 @@ class InsightGenerator:
                     related_metrics={"runtime_ms": runtime_ms},
                 )
             )
-        elif runtime_ms < self.RUNTIME_THRESHOLD_MS:
-            # Healthy but could optimize - find slowest component
-            slowest_info = ""
-            if self.hierarchical_report:
-                components_with_runtime = [
-                    c for c in self.hierarchical_report 
-                    if c.get("metrics", {}).get("runtime_ms")
-                ]
-                if components_with_runtime:
-                    slowest = max(components_with_runtime, key=lambda x: x["metrics"]["runtime_ms"])
-                    slowest_info = f" Component '{slowest['component']}' is the slowest at {slowest['metrics']['runtime_ms']/1000:.2f}s."
-            
-            insights.append(
-                Insight(
-                    title="Runtime Optimization Opportunity",
-                    severity=Severity.INFO,
-                    description=f"Total runtime is {runtime_ms/1000:.2f}s, below {self.RUNTIME_THRESHOLD_MS/1000:.0f}s threshold.{slowest_info}",
-                    likely_cause="Some components taking longer than necessary",
-                    suggested_actions=[
-                        "Profile component-level runtimes",
-                        "Look for opportunities to parallelize",
-                        "Consider caching frequently accessed data",
-                    ],
-                    related_metrics={"runtime_ms": runtime_ms},
-                )
-            )
+        # Don't generate INFO insights for healthy performance - only flag actual issues
 
         return insights
 
@@ -390,22 +335,7 @@ class InsightGenerator:
                     related_metrics={"memory_mb": memory_mb},
                 )
             )
-        elif memory_mb > self.MEMORY_THRESHOLD_MB * 0.8:
-            # Approaching threshold - proactive optimization
-            insights.append(
-                Insight(
-                    title="Memory Usage Monitoring",
-                    severity=Severity.INFO,
-                    description=f"Peak memory is {memory_mb:.0f}MB, at {memory_mb/self.MEMORY_THRESHOLD_MB*100:.0f}% of {self.MEMORY_THRESHOLD_MB}MB threshold.",
-                    likely_cause="Normal operation but approaching limits",
-                    suggested_actions=[
-                        "Monitor memory trends over time",
-                        "Consider optimization if usage continues to grow",
-                        "Review largest data structures",
-                    ],
-                    related_metrics={"memory_mb": memory_mb},
-                )
-            )
+        # Don't generate INFO insights for memory near limits - only flag when actually high
 
         return insights
 
