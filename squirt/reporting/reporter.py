@@ -466,10 +466,27 @@ class MetricsReporter:
             )
             insights = generator.analyze()
 
-            if not insights:
-                return "## ✅ All Systems Healthy\n\nNo issues detected. All metrics within normal thresholds."
+            # Check if there are any critical/high/medium severity issues
+            has_issues = any(
+                i.severity.value in ["critical", "high", "medium"] for i in insights
+            )
 
-            lines = ["## 🚨 Action Required\n"]
+            if has_issues:
+                lines = [
+                    "## 🚨 Action Required",
+                    "",
+                    "Critical issues detected that need attention:",
+                    "",
+                    "",
+                ]
+            else:
+                lines = [
+                    "## ✅ All Systems Healthy",
+                    "",
+                    "No critical issues detected:",
+                    "",
+                    "",
+                ]
 
             for i, insight in enumerate(insights, 1):
                 # to_markdown() already includes ### header, so just add number prefix

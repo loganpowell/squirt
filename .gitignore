@@ -42,6 +42,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+.ruff_cache/
 
 # Environments
 .env
@@ -63,7 +64,9 @@ venv.bak/
 .DS_Store
 Thumbs.db
 
-# Sleuth test artifacts (when testing sleuth itself)
+# squirt test artifacts (when testing squirt itself)
 tests/results/
 tests/history/
 tests/reports/
+
+throwaway

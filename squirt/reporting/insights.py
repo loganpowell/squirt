@@ -178,7 +178,7 @@ class InsightGenerator:
             or self.heartbeat.metrics.get("expected_match")
         )
         if accuracy is None:
-            accuracy = 1.0  # Default to healthy if no accuracy metric found
+            return insights  # No accuracy metric to analyze
 
         if accuracy < 0.5:
             insights.append(
@@ -209,6 +209,22 @@ class InsightGenerator:
                     related_metrics={"accuracy": accuracy},
                 )
             )
+        elif accuracy > self.ACCURACY_THRESHOLD:
+            # Healthy but room for improvement
+            insights.append(
+                Insight(
+                    title="Accuracy Optimization Opportunity",
+                    severity=Severity.INFO,
+                    description=f"System accuracy is {accuracy:.1%}. While above {self.ACCURACY_THRESHOLD:.0%} threshold, there's room for improvement.",
+                    likely_cause="Some edge cases or data variations not fully handled",
+                    suggested_actions=[
+                        "Review test cases with incorrect results",
+                        "Consider additional validation rules",
+                        "Check for patterns in mismatches",
+                    ],
+                    related_metrics={"accuracy": accuracy},
+                )
+            )
 
         return insights
 
@@ -229,7 +245,7 @@ class InsightGenerator:
             if error_free is not None:
                 error_rate = 1.0 - error_free
             else:
-                error_rate = 0.0
+                return insights  # No error rate metric to analyze
 
         if error_rate > 0.5:
             insights.append(
@@ -260,6 +276,22 @@ class InsightGenerator:
                     related_metrics={"error_rate": error_rate},
                 )
             )
+        elif error_rate < self.ERROR_RATE_THRESHOLD and error_rate > 0:
+            # Healthy but not zero - aim for perfection
+            insights.append(
+                Insight(
+                    title="Error Rate Analysis",
+                    severity=Severity.INFO,
+                    description=f"System has {error_rate:.1%} error rate. While below {self.ERROR_RATE_THRESHOLD:.0%} threshold, aim for zero errors.",
+                    likely_cause="Some inputs causing validation or processing failures",
+                    suggested_actions=[
+                        "Review error logs for patterns",
+                        "Check structure_valid failures",
+                        "Add better error handling for edge cases",
+                    ],
+                    related_metrics={"error_rate": error_rate},
+                )
+            )
 
         return insights
 
@@ -269,7 +301,10 @@ class InsightGenerator:
         # Note: Metrics now have suffixes (e.g., runtime_ms.sum)
         runtime_ms = self.heartbeat.metrics.get(
             "runtime_ms.sum"
-        ) or self.heartbeat.metrics.get("runtime_ms", 0)
+        ) or self.heartbeat.metrics.get("runtime_ms")
+        
+        if runtime_ms is None:
+            return insights  # No runtime metric to analyze
 
         if runtime_ms > self.RUNTIME_THRESHOLD_MS * 2:
             insights.append(
@@ -300,6 +335,32 @@ class InsightGenerator:
                     related_metrics={"runtime_ms": runtime_ms},
                 )
             )
+        elif runtime_ms < self.RUNTIME_THRESHOLD_MS:
+            # Healthy but could optimize - find slowest component
+            slowest_info = ""
+            if self.hierarchical_report:
+                components_with_runtime = [
+                    c for c in self.hierarchical_report 
+                    if c.get("metrics", {}).get("runtime_ms")
+                ]
+                if components_with_runtime:
+                    slowest = max(components_with_runtime, key=lambda x: x["metrics"]["runtime_ms"])
+                    slowest_info = f" Component '{slowest['component']}' is the slowest at {slowest['metrics']['runtime_ms']/1000:.2f}s."
+            
+            insights.append(
+                Insight(
+                    title="Runtime Optimization Opportunity",
+                    severity=Severity.INFO,
+                    description=f"Total runtime is {runtime_ms/1000:.2f}s, below {self.RUNTIME_THRESHOLD_MS/1000:.0f}s threshold.{slowest_info}",
+                    likely_cause="Some components taking longer than necessary",
+                    suggested_actions=[
+                        "Profile component-level runtimes",
+                        "Look for opportunities to parallelize",
+                        "Consider caching frequently accessed data",
+                    ],
+                    related_metrics={"runtime_ms": runtime_ms},
+                )
+            )
 
         return insights
 
@@ -309,7 +370,10 @@ class InsightGenerator:
         # Note: Metrics now have suffixes (e.g., memory_mb.max)
         memory_mb = self.heartbeat.metrics.get(
             "memory_mb.max"
-        ) or self.heartbeat.metrics.get("memory_mb", 0)
+        ) or self.heartbeat.metrics.get("memory_mb")
+        
+        if memory_mb is None:
+            return insights  # No memory metric to analyze
 
         if memory_mb > self.MEMORY_THRESHOLD_MB:
             insights.append(
@@ -322,6 +386,22 @@ class InsightGenerator:
                         "Profile memory usage",
                         "Check for large object retention",
                         "Consider streaming processing",
+                    ],
+                    related_metrics={"memory_mb": memory_mb},
+                )
+            )
+        elif memory_mb > self.MEMORY_THRESHOLD_MB * 0.8:
+            # Approaching threshold - proactive optimization
+            insights.append(
+                Insight(
+                    title="Memory Usage Monitoring",
+                    severity=Severity.INFO,
+                    description=f"Peak memory is {memory_mb:.0f}MB, at {memory_mb/self.MEMORY_THRESHOLD_MB*100:.0f}% of {self.MEMORY_THRESHOLD_MB}MB threshold.",
+                    likely_cause="Normal operation but approaching limits",
+                    suggested_actions=[
+                        "Monitor memory trends over time",
+                        "Consider optimization if usage continues to grow",
+                        "Review largest data structures",
                     ],
                     related_metrics={"memory_mb": memory_mb},
                 )
