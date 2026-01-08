@@ -104,9 +104,12 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        # Get configured directories from squirt
+        # Get configured directories from squirt (strip leading ./ if present)
         RESULTS_DIR=$(python -c "from squirt import get_config; print(get_config().get('results_dir', 'tests/results'))" 2>/dev/null || echo "tests/results")
         HISTORY_DIR=$(python -c "from squirt import get_config; print(get_config().get('history_dir', 'tests/history'))" 2>/dev/null || echo "tests/history")
+        # Remove leading ./ to avoid path issues
+        RESULTS_DIR="${RESULTS_DIR#./}"
+        HISTORY_DIR="${HISTORY_DIR#./}"
         echo "results_dir=$RESULTS_DIR" >> $GITHUB_OUTPUT
         echo "history_dir=$HISTORY_DIR" >> $GITHUB_OUTPUT
 
