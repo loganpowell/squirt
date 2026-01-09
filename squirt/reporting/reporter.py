@@ -1067,6 +1067,7 @@ class MetricsReporter:
                         "### Accuracy Over Time",
                         "",
                         "```mermaid",
+                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
                         "xychart-beta",
                         '  title "System Accuracy Trend"',
                         "  x-axis ["
@@ -1096,6 +1097,7 @@ class MetricsReporter:
                         "### Runtime Over Time",
                         "",
                         "```mermaid",
+                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
                         "xychart-beta",
                         '  title "System Runtime Trend (seconds)"',
                         "  x-axis ["
@@ -1124,6 +1126,7 @@ class MetricsReporter:
                         "### Cost Over Time",
                         "",
                         "```mermaid",
+                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
                         "xychart-beta",
                         '  title "System Cost Trend (USD)"',
                         "  x-axis ["
