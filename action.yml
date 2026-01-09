@@ -52,6 +52,11 @@ inputs:
     required: false
     default: ""
 
+  extra-pytest-args:
+    description: "Additional pytest arguments (e.g., --skip-metrics-namespaces=azure,echo)"
+    required: false
+    default: ""
+
 outputs:
   report-path:
     description: "Path to the generated full report"
@@ -119,7 +124,13 @@ runs:
         if [ -n "${{ inputs.test-maxfail }}" ]; then
           MAXFAIL_FLAG="--maxfail ${{ inputs.test-maxfail }}"
         fi
-        squirt test ${{ inputs.test-paths }} -v --tb short $MAXFAIL_FLAG
+
+        EXTRA_ARGS=""
+        if [ -n "${{ inputs.extra-pytest-args }}" ]; then
+          EXTRA_ARGS="${{ inputs.extra-pytest-args }}"
+        fi
+
+        squirt test ${{ inputs.test-paths }} -v --tb short $MAXFAIL_FLAG $EXTRA_ARGS
       continue-on-error: true
 
     - name: Generate Full Report

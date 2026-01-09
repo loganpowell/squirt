@@ -4,6 +4,8 @@
 
 Squirt provides a unified framework for instrumenting code, collecting metrics, analyzing performance, and generating actionable reports. Built for CI/CD pipelines with first-class GitHub Actions support.
 
+> **🚀 Using GitHub Actions?** See **[ACTION_README.md](ACTION_README.md)** for the complete GitHub Action guide with examples, configuration options, and commit message filtering.
+
 ## Features
 
 - 🎯 **Decorator-based instrumentation** - Add metrics to any function with `@track`
@@ -471,6 +473,13 @@ Maintainers can release new versions using the automated script:
 ```
 
 See [RELEASE.md](RELEASE.md) for detailed release documentation.
+
+## Documentation
+
+- 📖 **[GitHub Action Setup](ACTION_README.md)** - Complete guide for CI/CD integration
+- 🎯 **[Custom Metrics Guide](squirt/docs/custom_metrics_guide.md)** - Create domain-specific metrics
+- 🔍 **[API Analysis](squirt/docs/API_ANALYSIS.md)** - Understand metric patterns
+- 🚀 **[Release Guide](RELEASE.md)** - Publishing and versioning
 
 ## License
 
