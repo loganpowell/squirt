@@ -1134,9 +1134,7 @@ class MetricsReporter:
                         + "]",
                         '  y-axis "Memory (MB)" 0 --> '
                         + f"{max(memory_values) * 1.1:.0f}",
-                        "  line ["
-                        + ", ".join(f"{v:.1f}" for v in memory_values)
-                        + "]",
+                        "  line [" + ", ".join(f"{v:.1f}" for v in memory_values) + "]",
                         "```",
                         "",
                     ]

@@ -2,70 +2,14 @@
 Validation Transform Functions
 
 Check output validity against schemas and constraints.
+
+This module provides reference implementations for common validation patterns.
+Most users should use MetricBuilder methods instead:
+    m.error_free.compute(error_free_transform)
+    m.structure_valid.compute(your_custom_validator)
 """
 
-import json
-from collections.abc import Callable
 from typing import Any
-
-
-def json_valid_transform(inputs: dict[str, Any], output: Any) -> bool:
-    """
-    Check if output is valid JSON (for string outputs).
-
-    Returns True for dict/list outputs, or for strings that parse as JSON.
-    """
-    if isinstance(output, (dict, list)):
-        return True
-    if isinstance(output, str):
-        try:
-            json.loads(output)
-            return True
-        except json.JSONDecodeError:
-            return False
-    return False
-
-
-def has_required_fields_transform(
-    required_fields: list[str],
-) -> Callable[[dict[str, Any], Any], bool]:
-    """
-    Factory to check if output has required fields.
-
-    Args:
-        required_fields: List of field names that must be present.
-            Supports nested fields with dot notation: "user.name", "data.items"
-
-    Returns:
-        Transform that returns True if all fields present
-
-    Example:
-        has_user = has_required_fields_transform(["user.id", "user.name"])
-
-        @track(metrics=[
-            Metric("has_required", has_user, AggregationType.AVERAGE)
-        ])
-        def my_component(text: str) -> dict:
-            ...
-    """
-
-    def transform(inputs: dict[str, Any], output: Any) -> bool:
-        if not isinstance(output, dict):
-            return False
-
-        def check_nested(obj: dict[str, Any], fields: list[str]) -> bool:
-            for field in fields:
-                parts = field.split(".")
-                current: Any = obj
-                for part in parts:
-                    if not isinstance(current, dict) or part not in current:
-                        return False
-                    current = current[part]
-            return True
-
-        return check_nested(output, required_fields)
-
-    return transform
 
 
 def error_free_transform(inputs: dict[str, Any], output: Any) -> bool:
@@ -74,62 +18,21 @@ def error_free_transform(inputs: dict[str, Any], output: Any) -> bool:
 
     Returns False if output contains common error keys:
     - "error", "errors", "exception", "traceback", "fault"
+
+    Returns:
+        True if no error indicators found, False otherwise
+
+    Example:
+        @track(metrics=[m.error_free.compute(error_free_transform)])
+        def my_component():
+            return {"result": "success"}  # Returns True
+            # return {"error": "failed"}  # Returns False
     """
     if not isinstance(output, dict):
         return True
 
-    # Check for common error keys
-    error_keys = {"error", "errors", "exception", "traceback", "fault"}
-    if any(key in output for key in error_keys):
-        return False
-
-    return True
+    error_indicators = ["error", "errors", "exception", "traceback", "fault"]
+    return not any(key in output for key in error_indicators)
 
 
-def create_pydantic_validation_transform(
-    schema_class: type,
-) -> Callable[[dict[str, Any], Any], bool]:
-    """
-    Factory to create a Pydantic validation transform.
-
-    Args:
-        schema_class: Pydantic model class to validate against
-
-    Returns:
-        Transform function that returns True if valid, False otherwise
-
-    Example:
-        from pydantic import BaseModel
-
-        class UserResponse(BaseModel):
-            id: int
-            name: str
-
-        validate_user = create_pydantic_validation_transform(UserResponse)
-
-        @track(metrics=[
-            Metric("valid_response", validate_user, AggregationType.AVERAGE)
-        ])
-        def get_user(user_id: int) -> dict:
-            ...
-    """
-
-    def transform(inputs: dict[str, Any], output: Any) -> bool:
-        try:
-            if isinstance(output, dict):
-                schema_class(**output)
-            else:
-                schema_class(data=output)
-            return True
-        except Exception:
-            return False
-
-    return transform
-
-
-__all__ = [
-    "json_valid_transform",
-    "has_required_fields_transform",
-    "error_free_transform",
-    "create_pydantic_validation_transform",
-]
+__all__ = ["error_free_transform"]

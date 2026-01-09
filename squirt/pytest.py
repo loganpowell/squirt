@@ -675,9 +675,7 @@ def _cleanup_old_results(results_dir: Path) -> None:
             print(f"\n⚠️  Warning: Failed to clean up old results: {e}")
 
 
-def _resolve_expectations_path(
-    config: Config, tests_dir: Path | None
-) -> Path | None:
+def _resolve_expectations_path(config: Config, tests_dir: Path | None) -> Path | None:
     """Resolve default source file path from various sources."""
     # 1. CLI option (legacy support)
     cli_path = config.getoption("--squirt-expectations", default=None)

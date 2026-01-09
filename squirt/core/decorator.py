@@ -116,8 +116,6 @@ def get_test_context() -> dict[str, Any]:
 
 
 # =============================================================================
-# Expects Contract
-# =============================================================================
 # Component Execution Stack
 # =============================================================================
 
@@ -203,7 +201,7 @@ def record_result(result: MetricResult) -> None:
 
     # Also record to global MetricsClient if available
     try:
-        from squirt import _metrics_client
+        from .. import _metrics_client
 
         client = _metrics_client.get()
         if client is not None:

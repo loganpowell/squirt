@@ -12,41 +12,43 @@ from squirt import m
 
 ### Performance Metrics
 
-| Metric          | Type  | Description                    | Aggregation |
-| --------------- | ----- | ------------------------------ | ----------- |
-| `m.runtime_ms`  | float | Execution time in milliseconds | Sum         |
-| `m.memory_mb`   | float | Memory usage in megabytes      | Max         |
-| `m.cpu_percent` | float | CPU utilization percentage     | Max         |
-| `m.latency_p95` | float | 95th percentile latency        | Max         |
-| `m.throughput`  | float | Items processed per second     | Average     |
+| Metric          | Type  | Description                    | System Aggregation |
+| --------------- | ----- | ------------------------------ | ------------------ |
+| `m.runtime_ms`  | float | Execution time in milliseconds | Sum                |
+| `m.memory_mb`   | float | Memory usage in megabytes      | Max                |
+| `m.cpu_percent` | float | CPU utilization percentage     | Average            |
+| `m.latency_p95` | float | 95th percentile latency        | P95                |
+| `m.throughput`  | float | Items processed per second     | Average            |
 
 ### Quality Metrics
 
-| Metric             | Type        | Description                      | Aggregation |
-| ------------------ | ----------- | -------------------------------- | ----------- |
-| `m.accuracy`       | float (0-1) | Overall accuracy score           | Average     |
-| `m.completeness`   | float (0-1) | Data completeness ratio          | Average     |
-| `m.error_rate`     | float (0-1) | Error occurrence rate            | Average     |
-| `m.error_free`     | bool        | Whether execution was error-free | All         |
-| `m.expected_match` | bool        | Whether output matches expected  | All         |
+| Metric             | Type        | Description                      | System Aggregation |
+| ------------------ | ----------- | -------------------------------- | ------------------ |
+| `m.accuracy`       | float (0-1) | Overall accuracy score           | Average            |
+| `m.completeness`   | float (0-1) | Data completeness ratio          | Average            |
+| `m.error_rate`     | float (0-1) | Error occurrence rate            | Average            |
+| `m.error_free`     | bool        | Whether execution was error-free | All                |
+| `m.expected_match` | bool        | Whether output matches expected  | All                |
 
 ### Cost Metrics
 
-| Metric            | Type  | Description        | Aggregation |
-| ----------------- | ----- | ------------------ | ----------- |
-| `m.cost_usd`      | float | Cost in US dollars | Sum         |
-| `m.total_tokens`  | int   | Total tokens used  | Sum         |
-| `m.input_tokens`  | int   | Input tokens       | Sum         |
-| `m.output_tokens` | int   | Output tokens      | Sum         |
+| Metric            | Type  | Description        | System Aggregation |
+| ----------------- | ----- | ------------------ | ------------------ |
+| `m.cost_usd`      | float | Cost in US dollars | Sum                |
+| `m.total_tokens`  | int   | Total tokens used  | Sum                |
+| `m.input_tokens`  | int   | Input tokens       | Sum                |
+| `m.output_tokens` | int   | Output tokens      | Sum                |
 
 ### Structure Metrics
 
-| Metric              | Type | Description                | Aggregation |
-| ------------------- | ---- | -------------------------- | ----------- |
-| `m.structure_valid` | bool | Whether structure is valid | All         |
-| `m.node_count`      | int  | Number of nodes in output  | Average     |
-| `m.nesting_depth`   | int  | Maximum nesting depth      | Max         |
-| `m.line_count`      | int  | Number of lines            | Average     |
+| Metric              | Type | Description                | System Aggregation |
+| ------------------- | ---- | -------------------------- | ------------------ |
+| `m.structure_valid` | bool | Whether structure is valid | All                |
+| `m.node_count`      | int  | Number of nodes in output  | Average            |
+| `m.nesting_depth`   | int  | Maximum nesting depth      | Max                |
+| `m.line_count`      | int  | Number of lines            | Average            |
+
+**Note:** "System Aggregation" refers to how metrics are combined across components (intra-component). Within each component, metrics are always averaged across test iterations (inter-test aggregation).
 
 ## Using Metrics
 
@@ -96,7 +98,7 @@ def api_call():
 
 ## Metric Categories
 
-Metrics are organized into categories that determine how they're aggregated:
+Metrics are organized into categories that determine how they're aggregated at the system level.
 
 ### SystemMetric (Aggregated to System Level)
 
@@ -108,7 +110,14 @@ class CustomSystemMetric(SystemMetric):
     pass
 ```
 
-System metrics include: `accuracy`, `error_rate`, `runtime_ms`, `memory_mb`, `cost_usd`
+System metrics include: `accuracy`, `error_rate`, `runtime_ms`, `memory_mb`, `cost_usd`, `total_tokens`, `cpu_percent`, `latency_p95`
+
+Each `SystemMetric` has a defined aggregation type:
+
+- **AVERAGE**: `accuracy`, `error_rate`, `cpu_percent`, `throughput`
+- **SUM**: `runtime_ms`, `cost_usd`, `total_tokens`
+- **MAX**: `memory_mb`
+- **P95/P99**: `latency_p95`, `latency_p99`
 
 ### QualityMetric
 
@@ -121,7 +130,7 @@ from squirt.categories import QualityMetric
 ])
 ```
 
-Quality metrics are averaged when aggregating across components.
+Quality metrics are averaged when aggregating across components (intra-component aggregation).
 
 ### PerformanceMetric
 
@@ -129,12 +138,15 @@ Quality metrics are averaged when aggregating across components.
 from squirt.categories import PerformanceMetric
 
 @track(metrics=[
-    m.runtime_ms,  # PerformanceMetric - summed
-    m.memory_mb,   # PerformanceMetric - maxed
+    m.runtime_ms,  # PerformanceMetric - summed across components
+    m.memory_mb,   # PerformanceMetric - maxed across components
 ])
 ```
 
-Performance metrics are summed (runtime) or maxed (memory, CPU).
+Performance metrics use different aggregation strategies:
+
+- **Runtime/Throughput**: Summed (total time spent)
+- **Memory/CPU**: Maxed (peak resource usage)
 
 ## Creating Custom Metrics
 
@@ -220,15 +232,80 @@ def extract_tax_rules():
 
 ## Aggregation Types
 
-| Type      | Description       | Use Case                 |
-| --------- | ----------------- | ------------------------ |
-| `SUM`     | Add all values    | Runtime, tokens, cost    |
-| `AVERAGE` | Calculate mean    | Accuracy, quality scores |
-| `MAX`     | Take maximum      | Memory peak, CPU peak    |
-| `MIN`     | Take minimum      | Minimum confidence       |
-| `ALL`     | Boolean AND       | All must be true         |
-| `ANY`     | Boolean OR        | Any can be true          |
-| `COUNT`   | Count occurrences | Error count              |
+Squirt uses a **two-tier aggregation system**:
+
+### 1. Inter-Test Aggregation (Within Components)
+
+When a component runs multiple test iterations, metrics are aggregated within that component.
+
+**Rule:** Always **AVERAGE** across test iterations, regardless of metric type.
+
+**Example:**
+
+```python
+# Component: extract_json running on 3 test cases
+runtime_ms values: [1500, 1600, 1400]
+# Inter-test aggregation: AVERAGE
+component_runtime_ms = (1500 + 1600 + 1400) / 3 = 1500 ms
+```
+
+**Rationale:** Each test iteration is a sample of the component's behavior. Averaging gives typical performance per test case.
+
+### 2. Intra-Component Aggregation (Across Components)
+
+When aggregating metrics from multiple components to create system-level metrics, the aggregation type depends on the metric.
+
+**Rule:** Use the **aggregation type defined for each `SystemMetric`**.
+
+| Type      | Description       | Use Case                 | Example                         |
+| --------- | ----------------- | ------------------------ | ------------------------------- |
+| `SUM`     | Add all values    | Runtime, tokens, cost    | `runtime_ms`, `cost_usd`        |
+| `AVERAGE` | Calculate mean    | Accuracy, quality scores | `accuracy`, `error_rate`        |
+| `MAX`     | Take maximum      | Memory peak, CPU peak    | `memory_mb`, `cpu_percent`      |
+| `MIN`     | Take minimum      | Minimum confidence       | (custom metrics)                |
+| `P95`     | 95th percentile   | Latency percentiles      | `latency_p95`                   |
+| `P99`     | 99th percentile   | Latency percentiles      | `latency_p99`                   |
+| `ALL`     | Boolean AND       | All must be true         | `error_free`, `structure_valid` |
+| `ANY`     | Boolean OR        | Any can be true          | (custom metrics)                |
+| `COUNT`   | Count occurrences | Error count              | (custom metrics)                |
+
+**Example:**
+
+```python
+# System-level aggregation across 2 components:
+# extract_json: runtime_ms = 1500 (already averaged from tests)
+# enrich_fields: runtime_ms = 800 (already averaged from tests)
+
+# Intra-component aggregation: SUM (because runtime_ms uses SUM)
+system_runtime_ms = 1500 + 800 = 2300 ms
+```
+
+**Another example with accuracy:**
+
+```python
+# extract_json: field_accuracy = 0.85
+# enrich_fields: field_accuracy = 0.95
+# Both map to system metric: "accuracy"
+
+# Intra-component aggregation: AVERAGE (because accuracy uses AVERAGE)
+system_accuracy = (0.85 + 0.95) / 2 = 0.90
+```
+
+### Aggregation Flow
+
+```
+Test Run 1 → metric value 1 ─┐
+Test Run 2 → metric value 2 ─┼─→ AVERAGE → Component A metric
+Test Run 3 → metric value 3 ─┘
+
+Test Run 1 → metric value 1 ─┐
+Test Run 2 → metric value 2 ─┼─→ AVERAGE → Component B metric
+Test Run 3 → metric value 3 ─┘
+
+Component A metric ─┐
+Component B metric ─┼─→ SUM/AVERAGE/MAX → System metric
+Component C metric ─┘    (depends on metric type)
+```
 
 ## Best Practices
 
