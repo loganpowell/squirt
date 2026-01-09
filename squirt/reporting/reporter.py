@@ -21,9 +21,6 @@ from .insights import InsightGenerator
 class MetricsReporter:
     """Generate markdown reports from metrics data."""
 
-    # Unicode block characters for sparklines (▁▂▃▄▅▆▇█)
-    BLOCKS = "▁▂▃▄▅▆▇█"
-
     def __init__(
         self,
         results_dir: Path,
@@ -183,16 +180,17 @@ class MetricsReporter:
 
         min_val = min(values)
         max_val = max(values)
-
+        # Unicode block characters for sparklines (▁▂▃▄▅▆▇█)
+        BLOCKS = "▁▂▃▄▅▆▇█"
         # Avoid division by zero
         if max_val == min_val:
-            sparkline = self.BLOCKS[4] * len(values)  # Use middle block
+            sparkline = BLOCKS[4] * len(values)  # Use middle block
         else:
             # Normalize values to 0-7 range (for 8 block characters)
             normalized = [
                 int(((v - min_val) / (max_val - min_val)) * 7) for v in values
             ]
-            sparkline = "".join(self.BLOCKS[n] for n in normalized)
+            sparkline = "".join(BLOCKS[n] for n in normalized)
 
         # Wrap in backticks for consistent monospace rendering and baseline alignment
         return f"`{sparkline}`"
@@ -644,7 +642,7 @@ class MetricsReporter:
             lines.extend(
                 [
                     "<details>",
-                    "<summary>📦 Component-Level Metrics</summary>",
+                    "<summary>📦 Aggregate-Level Metrics</summary>",
                     "",
                     "| Metric | Value |",
                     "|--------|-------|",
@@ -929,25 +927,8 @@ class MetricsReporter:
 
             return result
 
-        # Define formatters for each metric type
-        def runtime_formatter(name: str, value: float) -> tuple:
-            value_sec = value / 1000
-            return (f"{name} ({value_sec:.2f}s)", int(value))
-
-        def memory_formatter(name: str, value: float) -> tuple:
-            return (f"{name} ({value:.1f}MB)", int(value))
-
-        def cpu_formatter(name: str, value: float) -> tuple:
-            return (f"{name} ({value:.1f}%)", int(value * 10))  # Scale for visibility
-
-        def cost_formatter(name: str, value: float) -> tuple:
-            return (f"{name} (${value:.4f})", int(value * 10000))
-
-        def tokens_formatter(name: str, value: float) -> tuple:
-            return (f"{name} ({int(value)} tokens)", int(value))
-
         # Helper to generate treemap for a given metric
-        def generate_treemap(metric_key: str, title: str, unit: str, formatter_func):
+        def generate_treemap(metric_key: str, config: dict):
             """Generate a treemap for a specific metric."""
             # Find roots that have this metric
             metric_components = [
@@ -987,11 +968,11 @@ class MetricsReporter:
                 metric_components = filtered_components
 
             section = [
-                f"### {title}",
+                f"### {config['title']}",
                 "",
                 "```mermaid",
                 "treemap-beta",
-                f'"{unit}"',
+                f'"{config["unit"]}"',
             ]
 
             # Sort by metric value descending
@@ -1002,39 +983,113 @@ class MetricsReporter:
                 .get(metric_key, 0),
                 reverse=True,
             ):
-                section.extend(build_tree(root, metric_key, formatter_func))
+                section.extend(build_tree(root, metric_key, config["formatter"]))
 
             section.extend(["```", ""])
             return section
 
-        # Generate treemaps for all metrics
-        lines.extend(
-            generate_treemap(
-                "runtime_ms", "Runtime Distribution", "Runtime (ms)", runtime_formatter
-            )
-        )
-        lines.extend(
-            generate_treemap(
-                "memory_mb", "Memory Distribution", "Memory (MB)", memory_formatter
-            )
-        )
-        lines.extend(
-            generate_treemap(
-                "cpu_percent", "CPU Distribution", "CPU (%)", cpu_formatter
-            )
-        )
-        lines.extend(
-            generate_treemap(
-                "token_cost", "Cost Distribution", "Cost (USD)", cost_formatter
-            )
-        )
-        lines.extend(
-            generate_treemap(
-                "total_tokens", "Token Usage Distribution", "Tokens", tokens_formatter
-            )
-        )
+        # Treemap formatters: metric_key -> (label_formatter, weight_calculator)
+        TREEMAP_CONFIGS = {
+            "runtime_ms": {
+                "title": "Runtime Distribution",
+                "unit": "Runtime (ms)",
+                "formatter": lambda name, value: (
+                    f"{name} ({value/1000:.2f}s)",
+                    int(value),
+                ),
+            },
+            "memory_mb": {
+                "title": "Memory Distribution",
+                "unit": "Memory (MB)",
+                "formatter": lambda name, value: (
+                    f"{name} ({value:.1f}MB)",
+                    int(value),
+                ),
+            },
+            "cpu_percent": {
+                "title": "CPU Distribution",
+                "unit": "CPU (%)",
+                "formatter": lambda name, value: (
+                    f"{name} ({value:.1f}%)",
+                    int(value * 10),
+                ),
+            },
+            "cost_usd": {
+                "title": "Cost Distribution",
+                "unit": "Cost (USD)",
+                "formatter": lambda name, value: (
+                    f"{name} (${value:.4f})",
+                    int(value * 10000),
+                ),
+            },
+            "total_tokens": {
+                "title": "Token Usage Distribution",
+                "unit": "Tokens",
+                "formatter": lambda name, value: (
+                    f"{name} ({int(value)} tokens)",
+                    int(value),
+                ),
+            },
+        }
+
+        # Generate treemaps for all configured metrics
+        for metric_key, config in TREEMAP_CONFIGS.items():
+            lines.extend(generate_treemap(metric_key, config))
 
         return "\n".join(lines)
+
+    def _generate_trend_chart(
+        self,
+        history: list[dict[str, Any]],
+        metric_key: str,
+        title: str,
+        y_label: str,
+        value_formatter=lambda v: f"{v:.2f}",
+        value_transformer=lambda v: v,
+        y_max_scale: float | None = 1.1,
+    ) -> list[str]:
+        """Generate a mermaid xychart for a metric trend.
+
+        Args:
+            history: Historical metric entries
+            metric_key: Key to extract from system_metrics
+            title: Chart title
+            y_label: Y-axis label
+            value_formatter: Function to format values in the line (default: 2 decimals)
+            value_transformer: Function to transform values before charting (default: identity)
+            y_max_scale: Multiplier for y-axis max, or None for fixed scale
+        """
+        values = []
+        for entry in reversed(history):  # Oldest to newest
+            sys_metrics = entry.get("system_metrics", {})
+            if metric_key in sys_metrics:
+                raw_value = sys_metrics[metric_key]
+                values.append(value_transformer(raw_value))
+
+        if len(values) < 2:
+            return []
+
+        # Calculate y-axis max
+        if y_max_scale is None:
+            # Fixed scale (e.g., 0-1 for accuracy)
+            y_max = "1"
+        else:
+            max_val = max(values)
+            y_max = value_formatter(max_val * y_max_scale)
+
+        return [
+            f"### {title}",
+            "",
+            "```mermaid",
+            '%%{init: {"theme":"base","themeVariables":{"xyChart":{"plotColorPalette":"#000000"}}}}%%',
+            "xychart-beta",
+            f'  title "{title}"',
+            "  x-axis [" + ", ".join(f"{i+1}" for i in range(len(values))) + "]",
+            f'  y-axis "{y_label}" 0 --> {y_max}',
+            "  line [" + ", ".join(value_formatter(v) for v in values) + "]",
+            "```",
+            "",
+        ]
 
     def _section_metric_charts(
         self, components: dict[str, dict[str, Any]], history: list[dict[str, Any]]
@@ -1054,143 +1109,62 @@ class MetricsReporter:
         has_system_metrics = any(entry.get("system_metrics") for entry in history)
 
         if has_system_metrics:
-            # Accuracy trend
-            accuracy_values = []
-            for entry in reversed(history):  # Oldest to newest
-                sys_metrics = entry.get("system_metrics", {})
-                if "accuracy" in sys_metrics:
-                    accuracy_values.append(sys_metrics["accuracy"])
-
-            if len(accuracy_values) >= 2:
-                lines.extend(
-                    [
-                        "### Accuracy Over Time",
-                        "",
-                        "```mermaid",
-                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
-                        "xychart-beta",
-                        '  title "System Accuracy Trend"',
-                        "  x-axis ["
-                        + ", ".join(f"{i+1}" for i in range(len(accuracy_values)))
-                        + "]",
-                        '  y-axis "Accuracy" 0 --> 1',
-                        "  line ["
-                        + ", ".join(f"{v:.3f}" for v in accuracy_values)
-                        + "]",
-                        "```",
-                        "",
-                    ]
+            # Generate all trend charts using the helper
+            lines.extend(
+                self._generate_trend_chart(
+                    history,
+                    "accuracy",
+                    "Accuracy Over Time",
+                    "Accuracy",
+                    value_formatter=lambda v: f"{v:.3f}",
+                    y_max_scale=None,  # Fixed 0-1 scale
                 )
+            )
 
-            # Runtime trend
-            runtime_values = []
-            for entry in reversed(history):
-                sys_metrics = entry.get("system_metrics", {})
-                if "runtime_ms" in sys_metrics:
-                    runtime_values.append(
-                        sys_metrics["runtime_ms"] / 1000
-                    )  # Convert to seconds
-
-            if len(runtime_values) >= 2:
-                lines.extend(
-                    [
-                        "### Runtime Over Time",
-                        "",
-                        "```mermaid",
-                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
-                        "xychart-beta",
-                        '  title "System Runtime Trend (seconds)"',
-                        "  x-axis ["
-                        + ", ".join(f"{i+1}" for i in range(len(runtime_values)))
-                        + "]",
-                        '  y-axis "Runtime (s)" 0 --> '
-                        + f"{max(runtime_values) * 1.1:.0f}",
-                        "  line ["
-                        + ", ".join(f"{v:.2f}" for v in runtime_values)
-                        + "]",
-                        "```",
-                        "",
-                    ]
+            lines.extend(
+                self._generate_trend_chart(
+                    history,
+                    "runtime_ms",
+                    "Runtime Over Time",
+                    "Runtime (s)",
+                    value_formatter=lambda v: f"{v:.2f}",
+                    value_transformer=lambda v: v / 1000,  # Convert ms to seconds
+                    y_max_scale=1.1,
                 )
+            )
 
-            # Memory trend
-            memory_values = []
-            for entry in reversed(history):
-                sys_metrics = entry.get("system_metrics", {})
-                if "memory_mb" in sys_metrics:
-                    memory_values.append(sys_metrics["memory_mb"])
-
-            if len(memory_values) >= 2:
-                lines.extend(
-                    [
-                        "### Memory Over Time",
-                        "",
-                        "```mermaid",
-                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
-                        "xychart-beta",
-                        '  title "System Memory Trend (MB)"',
-                        "  x-axis ["
-                        + ", ".join(f"{i+1}" for i in range(len(memory_values)))
-                        + "]",
-                        '  y-axis "Memory (MB)" 0 --> '
-                        + f"{max(memory_values) * 1.1:.0f}",
-                        "  line [" + ", ".join(f"{v:.1f}" for v in memory_values) + "]",
-                        "```",
-                        "",
-                    ]
+            lines.extend(
+                self._generate_trend_chart(
+                    history,
+                    "memory_mb",
+                    "Memory Over Time",
+                    "Memory (MB)",
+                    value_formatter=lambda v: f"{v:.1f}",
+                    y_max_scale=1.1,
                 )
+            )
 
-            # Cost trend
-            cost_values = []
-            for entry in reversed(history):
-                sys_metrics = entry.get("system_metrics", {})
-                if "cost_usd" in sys_metrics:
-                    cost_values.append(sys_metrics["cost_usd"])
-
-            if len(cost_values) >= 2:
-                lines.extend(
-                    [
-                        "### Cost Over Time",
-                        "",
-                        "```mermaid",
-                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
-                        "xychart-beta",
-                        '  title "System Cost Trend (USD)"',
-                        "  x-axis ["
-                        + ", ".join(f"{i+1}" for i in range(len(cost_values)))
-                        + "]",
-                        '  y-axis "Cost ($)" 0 --> ' + f"{max(cost_values) * 1.1:.4f}",
-                        "  line [" + ", ".join(f"{v:.4f}" for v in cost_values) + "]",
-                        "```",
-                        "",
-                    ]
+            lines.extend(
+                self._generate_trend_chart(
+                    history,
+                    "cost_usd",
+                    "Cost Over Time",
+                    "Cost ($)",
+                    value_formatter=lambda v: f"{v:.4f}",
+                    y_max_scale=1.1,
                 )
+            )
 
-            # Tokens trend
-            token_values = []
-            for entry in reversed(history):
-                sys_metrics = entry.get("system_metrics", {})
-                if "total_tokens" in sys_metrics:
-                    token_values.append(sys_metrics["total_tokens"])
-
-            if len(token_values) >= 2:
-                lines.extend(
-                    [
-                        "### Token Usage Over Time",
-                        "",
-                        "```mermaid",
-                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
-                        "xychart-beta",
-                        '  title "System Token Usage Trend"',
-                        "  x-axis ["
-                        + ", ".join(f"{i+1}" for i in range(len(token_values)))
-                        + "]",
-                        '  y-axis "Tokens" 0 --> ' + f"{int(max(token_values) * 1.1)}",
-                        "  line [" + ", ".join(f"{int(v)}" for v in token_values) + "]",
-                        "```",
-                        "",
-                    ]
+            lines.extend(
+                self._generate_trend_chart(
+                    history,
+                    "total_tokens",
+                    "Token Usage Over Time",
+                    "Tokens",
+                    value_formatter=lambda v: f"{int(v)}",
+                    y_max_scale=1.1,
                 )
+            )
 
         return "\n".join(lines)
 
