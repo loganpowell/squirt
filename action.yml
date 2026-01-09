@@ -138,7 +138,12 @@ runs:
           NAMESPACE_FLAGS="$NAMESPACE_FLAGS --only-metrics-namespaces=${{ inputs.only-metrics-namespaces }}"
         fi
 
-        squirt test ${{ inputs.test-paths }} -v --tb short $MAXFAIL_FLAG $NAMESPACE_FLAGS
+        # Use uv run pytest with squirt plugin for namespace filtering support
+        if command -v uv &> /dev/null && [ -f "pyproject.toml" ]; then
+          uv run pytest ${{ inputs.test-paths }} -v --tb short $MAXFAIL_FLAG $NAMESPACE_FLAGS
+        else
+          pytest ${{ inputs.test-paths }} -v --tb short $MAXFAIL_FLAG $NAMESPACE_FLAGS
+        fi
       continue-on-error: true
 
     - name: Generate Full Report
