@@ -1275,16 +1275,10 @@ class MetricsReporter:
             )
 
             for metric_name, value in sorted(metrics.items()):
-                if "runtime" in metric_name.lower() or "ms" in metric_name.lower():
-                    formatted = self._format_duration(value)
-                elif isinstance(value, float) and value <= 1.0 and value >= 0.0:
-                    formatted = self._format_percentage(value)
-                elif isinstance(value, bool):
-                    formatted = "Yes" if value else "No"
-                else:
-                    formatted = (
-                        f"{value:.2f}" if isinstance(value, float) else str(value)
-                    )
+                # Use centralized formatting logic to handle all metric types correctly
+                formatted = self._format_system_metric(metric_name, value) if isinstance(value, (int, float)) else (
+                    "Yes" if value is True else "No" if value is False else str(value)
+                )
                 lines.append(f"| {metric_name} | {formatted} |")
 
             lines.append("")
