@@ -70,6 +70,38 @@ class MetricsReporter:
         except subprocess.CalledProcessError:
             return "unknown"
 
+    def _get_project_name(self) -> str:
+        """Get project name from git remote or directory name."""
+        try:
+            # Try to get remote URL
+            result = subprocess.run(
+                ["git", "remote", "get-url", "origin"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            remote_url = result.stdout.strip()
+            # Extract repo name from URL (handles both HTTPS and SSH)
+            # e.g., https://github.com/user/repo.git -> repo
+            # e.g., git@github.com:user/repo.git -> repo
+            if remote_url:
+                repo_name = remote_url.rstrip("/").split("/")[-1]
+                return repo_name.replace(".git", "")
+        except subprocess.CalledProcessError:
+            pass
+        
+        # Fallback to directory name
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return Path(result.stdout.strip()).name
+        except subprocess.CalledProcessError:
+            return "Project"
+
     def _load_json(self, filepath: Path) -> dict[str, Any] | None:
         """Load JSON file, return None if not found."""
         if not filepath.exists():
@@ -562,9 +594,10 @@ class MetricsReporter:
 
     def _section_header(self) -> str:
         """Generate report header."""
+        project_name = self._get_project_name()
         return "\n".join(
             [
-                "# TTTAT Pipeline Metrics Report",
+                f"# {project_name} Pipeline Metrics Report",
                 "",
                 f"**Generated:** {self.timestamp}",
                 f"**Commit:** {self.git_hash}",
