@@ -3,10 +3,6 @@ Tests for the Squirt metrics library.
 """
 
 from squirt import AggregationType, SystemMetric, m, track
-from squirt.contrib.chunk import chunk
-from squirt.contrib.data import data
-from squirt.contrib.llm import llm
-from squirt.contrib.vector import vector
 from squirt.core.decorator import clear_results, get_results
 from squirt.metrics import MetricBuilder
 from squirt.plugins import MetricNamespace
@@ -157,46 +153,6 @@ class TestTrackDecorator:
 
         results = get_results()
         assert len(results) == 1
-
-
-class TestContribPlugins:
-    """Test contrib plugins."""
-
-    def test_data_metrics(self):
-        """Test data plugin metrics."""
-        assert isinstance(data.field_count, MetricBuilder)
-        assert isinstance(data.nesting_depth, MetricBuilder)
-        assert isinstance(data.node_count, MetricBuilder)
-
-        metric = data.field_count.from_output("count")
-        assert metric.name == "field_count"
-
-    def test_vector_metrics(self):
-        """Test vector plugin metrics."""
-        assert isinstance(vector.top_similarity, MetricBuilder)
-        assert isinstance(vector.avg_similarity, MetricBuilder)
-        assert isinstance(vector.embedding_dimension, MetricBuilder)
-
-        metric = vector.top_similarity.from_output("similarity")
-        assert metric.name == "top_similarity"
-
-    def test_chunk_metrics(self):
-        """Test chunk plugin metrics."""
-        assert isinstance(chunk.count, MetricBuilder)
-        assert isinstance(chunk.avg_size, MetricBuilder)
-        assert isinstance(chunk.total_size, MetricBuilder)
-
-        metric = chunk.count.from_output("chunks")
-        assert metric.name == "chunk_count"
-
-    def test_llm_metrics(self):
-        """Test LLM plugin metrics."""
-        assert isinstance(llm.total_tokens, MetricBuilder)
-        assert isinstance(llm.cost, MetricBuilder)
-        assert isinstance(llm.latency, MetricBuilder)
-
-        metric = llm.total_tokens.from_output("usage.tokens")
-        assert metric.name == "total_tokens"
 
 
 class TestCustomPlugin:

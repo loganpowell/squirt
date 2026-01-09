@@ -33,13 +33,12 @@ def sample_metrics():
 @pytest.fixture
 def mixed_namespace_metrics():
     """Create metrics from builtin and contrib namespaces."""
-    from squirt.contrib.llm import llm
+    from squirt.contrib.echo import echo
 
     return [
         m.runtime_ms.from_output("metadata.runtime_ms"),
         m.expected_match.compute(lambda i, o: 0.9),
-        llm.cost.from_output("usage.cost"),
-        llm.total_tokens.from_output("usage.total_tokens"),
+        echo.save("input", "expected", "actual"),
     ]
 
 
@@ -48,9 +47,9 @@ class TestSkipNamespaces:
 
     def test_skip_single_namespace(self, mixed_namespace_metrics):
         """Test skipping a single namespace."""
-        from squirt.contrib.llm import llm
+        from squirt.contrib.echo import echo
 
-        filtered = skip_namespaces([llm], mixed_namespace_metrics)
+        filtered = skip_namespaces([echo], mixed_namespace_metrics)
 
         # Should keep only builtin metrics
         assert len(filtered) == 2
@@ -60,16 +59,16 @@ class TestSkipNamespaces:
 
     def test_skip_multiple_namespaces(self):
         """Test skipping multiple namespaces."""
-        from squirt.contrib.data import data
-        from squirt.contrib.llm import llm
+        from squirt.contrib.echo import echo
+        from squirt.contrib.tokens import tokens
 
         metrics = [
             m.runtime_ms.from_output("metadata.runtime_ms"),
-            llm.cost.from_output("usage.cost"),
-            data.field_count.from_output("field_count"),
+            echo.save("input", "expected", "actual"),
+            tokens.count("input", "output"),
         ]
 
-        filtered = skip_namespaces([llm, data], metrics)
+        filtered = skip_namespaces([echo, tokens], metrics)
 
         # Should keep only builtin metric
         assert len(filtered) == 1
@@ -77,10 +76,10 @@ class TestSkipNamespaces:
 
     def test_skip_returns_all_when_no_match(self, sample_metrics):
         """Test that skip_namespaces returns all metrics when namespace doesn't match."""
-        from squirt.contrib.llm import llm
+        from squirt.contrib.echo import echo
 
-        # Skip llm namespace, but no llm metrics present
-        filtered = skip_namespaces([llm], sample_metrics)
+        # Skip echo namespace, but no echo metrics present
+        filtered = skip_namespaces([echo], sample_metrics)
 
         assert len(filtered) == len(sample_metrics)
 
@@ -106,29 +105,29 @@ class TestOnlyNamespaces:
 
     def test_only_multiple_namespaces(self):
         """Test including multiple namespaces."""
-        from squirt.contrib.data import data
-        from squirt.contrib.llm import llm
+        from squirt.contrib.echo import echo
+        from squirt.contrib.tokens import tokens
 
         metrics = [
             m.runtime_ms.from_output("metadata.runtime_ms"),
-            llm.cost.from_output("usage.cost"),
-            data.field_count.from_output("field_count"),
+            echo.save("input", "expected", "actual"),
+            tokens.count("input", "output"),
         ]
 
-        filtered = only_namespaces([m, llm], metrics)
+        filtered = only_namespaces([m, echo], metrics)
 
-        # Should keep builtin and llm metrics, exclude data
+        # Should keep builtin and echo metrics, exclude tokens
         assert len(filtered) == 2
         metric_names = [metric.name for metric in filtered]
         assert "runtime_ms" in metric_names
-        assert "cost_usd" in metric_names
+        assert any("save_" in name for name in metric_names)  # Echo metric
 
     def test_only_returns_empty_when_no_match(self, sample_metrics):
         """Test that only_namespaces returns empty when namespace doesn't match."""
-        from squirt.contrib.llm import llm
+        from squirt.contrib.echo import echo
 
-        # Only llm namespace, but no llm metrics present
-        filtered = only_namespaces([llm], sample_metrics)
+        # Only echo namespace, but no echo metrics present
+        filtered = only_namespaces([echo], sample_metrics)
 
         assert len(filtered) == 0
 
@@ -198,11 +197,11 @@ class TestRuntimeFiltering:
 
     def test_configure_namespace_filters_skip(self):
         """Test configuring skip filters."""
-        configure_namespace_filters(skip=["llm", "vector"])
+        configure_namespace_filters(skip=["echo", "tokens"])
 
         filters = get_namespace_filters()
 
-        assert filters["skip"] == ["llm", "vector"]
+        assert filters["skip"] == ["echo", "tokens"]
         assert filters["only"] is None
 
         # Cleanup
@@ -210,11 +209,11 @@ class TestRuntimeFiltering:
 
     def test_configure_namespace_filters_only(self):
         """Test configuring only filters."""
-        configure_namespace_filters(only=["m", "data"])
+        configure_namespace_filters(only=["m", "echo"])
 
         filters = get_namespace_filters()
 
-        assert filters["only"] == ["m", "data"]
+        assert filters["only"] == ["m", "echo"]
         assert filters["skip"] is None
 
         # Cleanup
@@ -230,11 +229,11 @@ class TestRuntimeFiltering:
 
     def test_apply_runtime_filters_skip(self, mixed_namespace_metrics):
         """Test apply_runtime_filters with skip configuration."""
-        configure_namespace_filters(skip=["llm"])
+        configure_namespace_filters(skip=["echo"])
 
         filtered = apply_runtime_filters(mixed_namespace_metrics)
 
-        # Should exclude llm metrics
+        # Should exclude echo metrics
         assert len(filtered) == 2
         assert all(
             metric.name in ["runtime_ms", "expected_match"] for metric in filtered
@@ -260,11 +259,11 @@ class TestRuntimeFiltering:
 
     def test_apply_runtime_filters_skip_multiple(self, mixed_namespace_metrics):
         """Test apply_runtime_filters skipping multiple namespaces."""
-        configure_namespace_filters(skip=["llm", "vector"])
+        configure_namespace_filters(skip=["echo", "tokens"])
 
         filtered = apply_runtime_filters(mixed_namespace_metrics)
 
-        # Should exclude llm metrics
+        # Should exclude echo metrics
         assert len(filtered) == 2
         assert all(
             metric.name in ["runtime_ms", "expected_match"] for metric in filtered
@@ -280,10 +279,10 @@ class TestFilteringIntegration:
     def test_track_applies_runtime_filters(self, tmp_path):
         """Test that @track decorator applies runtime filters."""
         from squirt import configure_metrics, get_metrics_client
-        from squirt.contrib.llm import llm
+        from squirt.contrib.echo import echo
 
-        # Configure to skip llm namespace
-        configure_namespace_filters(skip=["llm"])
+        # Configure to skip echo namespace
+        configure_namespace_filters(skip=["echo"])
 
         # Configure metrics client
         configure_metrics(results_dir=str(tmp_path), persist=False)
@@ -291,13 +290,12 @@ class TestFilteringIntegration:
         @track(
             metrics=[
                 m.runtime_ms.from_output("metadata.runtime_ms"),
-                llm.cost.from_output("usage.cost"),
+                echo.save("input", "expected", "actual"),
             ]
         )
         def test_function(text: str) -> dict:
             return {
                 "result": text.upper(),
-                "usage": {"cost": 0.01},
                 "metadata": {"runtime_ms": 100},
             }
 
@@ -307,11 +305,12 @@ class TestFilteringIntegration:
         client = get_metrics_client()
         results = client.get_results("test_function")
 
-        # Should have recorded runtime_ms but not cost
+        # Should have recorded runtime_ms but not echo metric
         assert len(results["test_function"]) == 1
         metrics = results["test_function"][0].metrics
         assert "runtime_ms" in metrics
-        assert "cost_usd" not in metrics  # LLM metric should be filtered out
+        # Echo metric should be filtered out
+        assert not any("save_" in name for name in metrics.keys())
 
         # Cleanup
         configure_namespace_filters(skip=None, only=None)
@@ -319,7 +318,7 @@ class TestFilteringIntegration:
     def test_track_with_only_filter(self, tmp_path):
         """Test @track with only namespace filter."""
         from squirt import configure_metrics, get_metrics_client
-        from squirt.contrib.llm import llm
+        from squirt.contrib.echo import echo
 
         # Configure to only include builtin namespace
         configure_namespace_filters(only=["m"])
@@ -330,13 +329,12 @@ class TestFilteringIntegration:
         @track(
             metrics=[
                 m.expected_match.compute(lambda i, o: 0.95),
-                llm.cost.from_output("usage.cost"),
+                echo.save("input", "expected", "actual"),
             ]
         )
         def test_function(text: str) -> dict:
             return {
                 "result": text.upper(),
-                "usage": {"cost": 0.01},
             }
 
         test_function("test")
@@ -345,11 +343,12 @@ class TestFilteringIntegration:
         client = get_metrics_client()
         results = client.get_results("test_function")
 
-        # Should have recorded expected_match but not cost
+        # Should have recorded expected_match but not echo
         assert len(results["test_function"]) == 1
         metrics = results["test_function"][0].metrics
         assert "expected_match" in metrics
-        assert "cost_usd" not in metrics
+        # Echo metric should be filtered out
+        assert not any("save_" in name for name in metrics.keys())
 
         # Cleanup
         configure_namespace_filters(skip=None, only=None)
