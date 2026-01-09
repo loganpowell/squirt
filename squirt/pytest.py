@@ -226,11 +226,6 @@ def pytest_sessionstart(session: pytest.Session) -> None:
             skip=skip_namespaces.split(",") if skip_namespaces else None,
             only=only_namespaces.split(",") if only_namespaces else None,
         )
-        if _squirt_config.get("verbose", True):
-            if skip_namespaces:
-                print(f"   Skipping namespaces: {skip_namespaces}")
-            if only_namespaces:
-                print(f"   Only collecting from: {only_namespaces}")
 
     # Configure squirt core AND initialize MetricsClient
     configure(
@@ -255,9 +250,17 @@ def pytest_sessionstart(session: pytest.Session) -> None:
             print("\n📊 Squirt configured")
             print(f"   Results: {results_dir}")
             print(f"   Expectations: {expectations_path}")
+            if skip_namespaces:
+                print(f"   Skip namespaces: {skip_namespaces}")
+            if only_namespaces:
+                print(f"   Only namespaces: {only_namespaces}")
     elif _squirt_config.get("verbose", True):
         print("\n📊 Squirt configured (no expectations file)")
         print(f"   Results: {results_dir}")
+        if skip_namespaces:
+            print(f"   Skip namespaces: {skip_namespaces}")
+        if only_namespaces:
+            print(f"   Only namespaces: {only_namespaces}")
 
 
 def pytest_collect_file(parent, file_path):
