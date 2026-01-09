@@ -362,8 +362,8 @@ class MetricsReporter:
                 "error_rate",
                 "runtime_ms",
                 "memory_mb",
-                "cost_usd",
                 "total_tokens",
+                "cost_usd",
             ]
 
             prev_system_metrics = {}
@@ -1113,6 +1113,35 @@ class MetricsReporter:
                     ]
                 )
 
+            # Memory trend
+            memory_values = []
+            for entry in reversed(history):
+                sys_metrics = entry.get("system_metrics", {})
+                if "memory_mb" in sys_metrics:
+                    memory_values.append(sys_metrics["memory_mb"])
+
+            if len(memory_values) >= 2:
+                lines.extend(
+                    [
+                        "### Memory Over Time",
+                        "",
+                        "```mermaid",
+                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
+                        "xychart-beta",
+                        '  title "System Memory Trend (MB)"',
+                        "  x-axis ["
+                        + ", ".join(f"{i+1}" for i in range(len(memory_values)))
+                        + "]",
+                        '  y-axis "Memory (MB)" 0 --> '
+                        + f"{max(memory_values) * 1.1:.0f}",
+                        "  line ["
+                        + ", ".join(f"{v:.1f}" for v in memory_values)
+                        + "]",
+                        "```",
+                        "",
+                    ]
+                )
+
             # Cost trend
             cost_values = []
             for entry in reversed(history):
@@ -1134,6 +1163,32 @@ class MetricsReporter:
                         + "]",
                         '  y-axis "Cost ($)" 0 --> ' + f"{max(cost_values) * 1.1:.4f}",
                         "  line [" + ", ".join(f"{v:.4f}" for v in cost_values) + "]",
+                        "```",
+                        "",
+                    ]
+                )
+
+            # Tokens trend
+            token_values = []
+            for entry in reversed(history):
+                sys_metrics = entry.get("system_metrics", {})
+                if "total_tokens" in sys_metrics:
+                    token_values.append(sys_metrics["total_tokens"])
+
+            if len(token_values) >= 2:
+                lines.extend(
+                    [
+                        "### Token Usage Over Time",
+                        "",
+                        "```mermaid",
+                        "%%{init: {'theme':'base','themeVariables':{'xyChart':{'plotColorPalette':'#000000'}}}}%%",
+                        "xychart-beta",
+                        '  title "System Token Usage Trend"',
+                        "  x-axis ["
+                        + ", ".join(f"{i+1}" for i in range(len(token_values)))
+                        + "]",
+                        '  y-axis "Tokens" 0 --> ' + f"{int(max(token_values) * 1.1)}",
+                        "  line [" + ", ".join(f"{int(v)}" for v in token_values) + "]",
                         "```",
                         "",
                     ]

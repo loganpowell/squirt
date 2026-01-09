@@ -151,13 +151,17 @@ def pytest_addoption(parser: Parser) -> None:
         "--skip-metrics-namespaces",
         action="store",
         default=None,
-        help="Comma-separated list of metric namespaces to skip (e.g., 'llm,vector')",
+        help="Comma-separated list of metric namespaces to skip (e.g., 'llm,vector'). "
+        "Namespace names match class names without 'Metrics' suffix: "
+        "TokensMetrics → 'tokens', AzureAIMetrics → 'azure', BuiltinMetrics → 'm'",
     )
     group.addoption(
         "--only-metrics-namespaces",
         action="store",
         default=None,
-        help="Comma-separated list of metric namespaces to include exclusively (e.g., 'm,data')",
+        help="Comma-separated list of metric namespaces to include exclusively (e.g., 'm,data'). "
+        "Namespace names match class names without 'Metrics' suffix: "
+        "TokensMetrics → 'tokens', AzureAIMetrics → 'azure', BuiltinMetrics → 'm'",
     )
 
 
