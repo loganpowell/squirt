@@ -52,8 +52,13 @@ inputs:
     required: false
     default: ""
 
-  extra-pytest-args:
-    description: "Additional pytest arguments (e.g., --skip-metrics-namespaces=azure,echo)"
+  skip-metrics-namespaces:
+    description: "Comma-separated list of metric namespaces to skip (e.g., azure,echo)"
+    required: false
+    default: ""
+
+  only-metrics-namespaces:
+    description: "Comma-separated list of metric namespaces to run exclusively (e.g., m,tokens)"
     required: false
     default: ""
 
@@ -119,18 +124,16 @@ runs:
       if: inputs.run-tests == 'true'
       shell: bash
       working-directory: ${{ inputs.working-directory }}
+      env:
+        SQUIRT_SKIP_NAMESPACES: ${{ inputs.skip-metrics-namespaces }}
+        SQUIRT_ONLY_NAMESPACES: ${{ inputs.only-metrics-namespaces }}
       run: |
         MAXFAIL_FLAG=""
         if [ -n "${{ inputs.test-maxfail }}" ]; then
           MAXFAIL_FLAG="--maxfail ${{ inputs.test-maxfail }}"
         fi
 
-        EXTRA_ARGS=""
-        if [ -n "${{ inputs.extra-pytest-args }}" ]; then
-          EXTRA_ARGS="${{ inputs.extra-pytest-args }}"
-        fi
-
-        squirt test ${{ inputs.test-paths }} -v --tb short $MAXFAIL_FLAG $EXTRA_ARGS
+        squirt test ${{ inputs.test-paths }} -v --tb short $MAXFAIL_FLAG
       continue-on-error: true
 
     - name: Generate Full Report
