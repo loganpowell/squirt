@@ -89,7 +89,7 @@ class MetricsReporter:
                 return repo_name.replace(".git", "")
         except subprocess.CalledProcessError:
             pass
-        
+
         # Fallback to directory name
         try:
             result = subprocess.run(
